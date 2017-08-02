@@ -21,22 +21,22 @@ import com.example.ominext.plaidfork.ui.chat.Utils
 
 class ItemChatRightViewHolder(itemView: View, private val adapterListener: ItemChatLeftViewHolder.AdapterListener?) : RecyclerView.ViewHolder(itemView) {
     @BindView(R.id.textview_itemchatright_message)
-    internal var tvMessage: TextView? = null
+    lateinit var tvMessage: TextView
 
     @BindView(R.id.textview_chatright_time)
-    internal var tvTime: TextView? = null
+    lateinit var tvTime: TextView
 
     @BindView(R.id.imageview_seen)
-    internal var imvSeen: ImageView? = null
+    lateinit var imvSeen: ImageView
 
     @BindView(R.id.imageview_heart)
-    internal var imvHeart: ImageView? = null
+    lateinit var imvHeart: ImageView
 
     @BindView(R.id.imageview_image)
-    internal var imvImage: ImageView? = null
+    lateinit var imvImage: ImageView
 
     @BindView(R.id.cardview_image)
-    internal var cardViewImage: CardView? = null
+    lateinit var cardViewImage: CardView
 
     private var isShowTime: Boolean = false
 
@@ -45,28 +45,28 @@ class ItemChatRightViewHolder(itemView: View, private val adapterListener: ItemC
     }
 
     fun bindData(message: Message) {
-        tvTime?.text = Utils.getTimeAgoMessage(message.createdAt)
+        tvTime.text = Utils.getTimeAgoMessage(message.createdAt)
 
         when (message.messageType) {
             ChatConstant.MSG_TYPE_TEXT -> {
-                tvMessage?.text = message.message
+                tvMessage.text = message.message
 
                 Utils.showView(tvMessage)
                 Utils.hideView(imvHeart)
                 Utils.hideView(cardViewImage)
-                imvImage?.setImageDrawable(null)
+                imvImage.setImageDrawable(null)
             }
             ChatConstant.MSG_TYPE_ICON_HEART -> {
-                tvMessage?.text = ""
+                tvMessage.text = ""
 
-                tvMessage?.visibility = View.INVISIBLE
+                tvMessage.visibility = View.INVISIBLE
                 Utils.showView(imvHeart)
                 Utils.hideView(cardViewImage)
-                imvImage?.setImageDrawable(null)
+                imvImage.setImageDrawable(null)
             }
             ChatConstant.MSG_TYPE_MEDIA -> {
-                tvMessage?.text = ""
-                tvMessage?.visibility = View.INVISIBLE
+                tvMessage.text = ""
+                tvMessage.visibility = View.INVISIBLE
                 Utils.hideView(imvHeart)
 
                 Utils.showView(cardViewImage)
@@ -85,24 +85,24 @@ class ItemChatRightViewHolder(itemView: View, private val adapterListener: ItemC
     fun bindStatusMessage(status: Int) {
         when (status) {
             ChatConstant.PENDING -> {
-                imvSeen?.setImageResource(R.drawable.ic_circle)
+                imvSeen.setImageResource(R.drawable.ic_circle)
             }
             ChatConstant.SERVER_RECEIVED -> {
-                imvSeen?.setImageResource(R.drawable.ic_check_outline)
+                imvSeen.setImageResource(R.drawable.ic_check_outline)
             }
             ChatConstant.FRIEND_RECEIVED -> {
-                imvSeen?.setImageResource(R.drawable.ic_check_fill)
+                imvSeen.setImageResource(R.drawable.ic_check_fill)
             }
             ChatConstant.HANDLE_COMPLETE -> {
-                if (imvSeen?.drawable != null) {
-                    imvSeen?.setImageDrawable(null)
+                if (imvSeen.drawable != null) {
+                    imvSeen.setImageDrawable(null)
                 }
             }
         }
     }
 
     @OnClick(R.id.textview_itemchatright_message, R.id.cardview_image, R.id.imageview_heart)
-    internal fun onClickMessage() {
+    fun onClickMessage() {
 //        if (adapterListener != null && !adapterListener.isValidToShowTime(adapterPosition)) {
 //            return
 //        }

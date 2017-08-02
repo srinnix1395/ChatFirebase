@@ -7,7 +7,7 @@ import com.example.ominext.chatfirebase.R
 /**
  * Created by Ominext on 8/1/2017.
  */
-class MainActivity : AppCompatActivity() {
+class ChatListActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -1,7 +1,5 @@
 package com.example.ominext.plaidfork.ui.chat
 
-import com.google.gson.annotations.SerializedName
-
 /**
  * Created by Ominext on 8/1/2017.
  */
@@ -9,31 +7,31 @@ import com.google.gson.annotations.SerializedName
 
 class Message {
 
-    @SerializedName("_id")
+//    @SerializedName("_id")
     var id: String? = null
 
-    @SerializedName("_id_sender")
+//    @SerializedName("_id_sender")
     var idSender: String? = null
 
-    @SerializedName("_id_receiver")
+//    @SerializedName("_id_receiver")
     var idReceiver: String? = null
 
-    @SerializedName("_id_conversation")
+//    @SerializedName("_id_conversation")
     var conversationId: String? = null
 
-    @SerializedName("message")
+//    @SerializedName("message")
     var message: String? = null
 
-    @SerializedName("message_type")
+//    @SerializedName("message_type")
     var messageType: Int = 0
 
-    @SerializedName("created_at")
+//    @SerializedName("created_at")
     var createdAt: Long = 0
 
-    @SerializedName("status")
+//    @SerializedName("status")
     var status: Int = 0
 
-    @SerializedName("is_seen")
+//    @SerializedName("is_seen")
     var isSeen: Boolean = false
 
     var isTypingMessage: Boolean = false

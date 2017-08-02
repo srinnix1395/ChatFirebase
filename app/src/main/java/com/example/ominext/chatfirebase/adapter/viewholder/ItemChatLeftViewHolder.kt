@@ -18,26 +18,27 @@ import com.example.ominext.plaidfork.ui.chat.Utils
  * Created by Ominext on 8/1/2017.
  */
 
-class ItemChatLeftViewHolder(itemView: View, urlImage: String, accountType: Int,
-                             private val adapterListener: AdapterListener?) : RecyclerView.ViewHolder(itemView) {
+class ItemChatLeftViewHolder(itemView: View,
+                             urlImage: String?,
+                             val adapterListener: AdapterListener?) : RecyclerView.ViewHolder(itemView) {
 
     @BindView(R.id.textview_chatleft_time)
-    var tvTime: TextView? = null
+    lateinit var tvTime: TextView
 
     @BindView(R.id.textview_itemchatleft_message)
-    var tvMessage: TextView? = null
+    lateinit var tvMessage: TextView
 
     @BindView(R.id.imageview_typing)
-    var imvTyping: ImageView? = null
+    lateinit var imvTyping: ImageView
 
     @BindView(R.id.imageview_image)
-    var imvImage: ImageView? = null
+    lateinit var imvImage: ImageView
 
     @BindView(R.id.cardview_image)
-    var cardViewImage: CardView? = null
+    lateinit var cardViewImage: CardView
 
     @BindView(R.id.imageview_heart)
-    var imvHeart: ImageView? = null
+    lateinit var imvHeart: ImageView
 
     private var isShowTime: Boolean = false
 

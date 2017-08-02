@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">ChatFirebase</string>
+    <string name="writeMessage">Viết tin nhắn…</string>
+    <string name="error_common">Đã có lỗi xảy ra trong quá trình xử lý, xin thử lại!</string>
+    <string name="login">Đăng nhập</string>
+    <string name="email">Email</string>
+    <string name="close">Đóng</string>
+
+    <string name="server_client_id">536758381606-1voblmen1fb90t31ltnckggskm47migl.apps.googleusercontent.com</string>
+
 </resources>

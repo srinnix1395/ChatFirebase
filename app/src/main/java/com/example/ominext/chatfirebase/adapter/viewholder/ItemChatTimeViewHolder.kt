@@ -5,7 +5,7 @@ import android.view.View
 import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
-import com.example.ominext.plaidfork.R
+import com.example.ominext.chatfirebase.R
 
 /**
  * Created by Ominext on 8/1/2017.
@@ -14,13 +14,13 @@ import com.example.ominext.plaidfork.R
 
 class ItemChatTimeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     @BindView(R.id.textview_time)
-    var tvTime: TextView? = null
+    lateinit var tvTime: TextView
 
     init {
         ButterKnife.bind(this, itemView)
     }
 
     fun bindData(time: Long) {
-        tvTime?.text = com.example.ominext.plaidfork.ui.chat.Utils.getTimeAgoMessage(time)
+        tvTime.text = com.example.ominext.plaidfork.ui.chat.Utils.getTimeAgoMessage(time)
     }
 }

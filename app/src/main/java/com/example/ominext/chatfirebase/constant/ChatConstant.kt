@@ -56,4 +56,11 @@ object ChatConstant {
     val MSG_TYPE_MEDIA = 3
 
     val NOTIFICATION_ID = 125812
+
+
+    //
+    val USERS = "users"
+    val USER = "user"
+    val CONVERSATIONS = "CONVERSATIONS"
+
 }
