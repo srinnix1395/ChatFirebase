@@ -45,3 +45,8 @@ class User() : Parcelable {
         dest.writeString(photo)
     }
 }
+
+enum class Status{
+    OFFLINE,
+    ONLINE
+}
