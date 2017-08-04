@@ -8,6 +8,7 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import com.bumptech.glide.Glide
 import com.example.ominext.chatfirebase.R
+import com.example.ominext.chatfirebase.model.Status
 import com.example.ominext.chatfirebase.model.User
 
 /**
@@ -22,9 +23,12 @@ class UserViewHolder(view: View,
     @BindView(R.id.tvName)
     lateinit var tvName: TextView
 
+    @BindView(R.id.imvStatus)
+    lateinit var imvStatus: ImageView
+
     init {
         ButterKnife.bind(this, itemView)
-        itemView.setOnClickListener{
+        itemView.setOnClickListener {
             onClickItem(adapterPosition)
         }
     }
@@ -36,5 +40,15 @@ class UserViewHolder(view: View,
                 .error(R.drawable.user)
                 .into(imvImage)
         tvName.text = user.name
+
+        bindStatus(user)
+    }
+
+    fun bindStatus(user: User) {
+        if (user.status == Status.ONLINE.ordinal) {
+            imvStatus.setImageResource(R.drawable.ic_status_online)
+        } else {
+            imvStatus.setImageResource(R.drawable.ic_status_offline)
+        }
     }
 }
