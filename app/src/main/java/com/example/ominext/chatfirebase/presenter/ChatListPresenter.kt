@@ -3,11 +3,11 @@ package com.example.ominext.chatfirebase.presenter
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import com.example.ominext.chatfirebase.ChatApplication
 import com.example.ominext.chatfirebase.model.User
 import com.example.ominext.chatfirebase.view.ChatListFragment
 import com.example.ominext.chatfirebase.view.DetailChatActivity
 import com.example.ominext.plaidfork.ui.chat.ChatConstant
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 
@@ -16,18 +16,16 @@ import com.google.firebase.database.*
  */
 class ChatListPresenter {
 
-    lateinit var db: DatabaseReference
+    var db: DatabaseReference? = ChatApplication.app?.db
     lateinit var view: ChatListFragment
     lateinit var listUser: ArrayList<User>
-    var firebaseUser: FirebaseUser? = null
+    var firebaseUser: FirebaseUser? = ChatApplication.app?.firebaseUser
 
     var offset: Double = 0.0
 
     fun addView(fragment: ChatListFragment) {
         view = fragment
-        db = FirebaseDatabase.getInstance().reference
         listUser = ArrayList()
-        firebaseUser = FirebaseAuth.getInstance().currentUser
     }
 
     fun onClickItem(position: Int) {
@@ -39,7 +37,7 @@ class ChatListPresenter {
     }
 
     fun getUsers() {
-        db.child(ChatConstant.USERS).addListenerForSingleValueEvent(object : ValueEventListener {
+        db?.child(ChatConstant.USERS)?.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 view.disableProgressbar()
                 Toast.makeText(view.context, p0.message, Toast.LENGTH_SHORT).show()
@@ -54,9 +52,48 @@ class ChatListPresenter {
                             users.add(user!!)
                         }
                     }
+                    listenStatus()
                     view.insertUser(users)
                     view.disableProgressbar()
                 }
+            }
+        })
+    }
+
+    private fun listenStatus() {
+        db?.child(ChatConstant.USERS)?.addChildEventListener(object : ChildEventListener {
+            override fun onCancelled(p0: DatabaseError?) {
+
+            }
+
+            override fun onChildMoved(p0: DataSnapshot?, p1: String?) {
+
+            }
+
+            override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
+                val user = p0?.getValue(User::class.java)
+                updateUser(user)
+            }
+
+            override fun onChildAdded(p0: DataSnapshot?, p1: String?) {
+
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot?) {
+
+            }
+
+        })
+    }
+
+    private fun updateUser(userChanged: User?) {
+        listUser.forEachIndexed({ index: Int, user: User ->
+            if (userChanged?.uid == user.uid) {
+                userChanged?.let {
+                    user.status = userChanged.status
+                    view.updateStatus(index, user.status)
+                }
+                return
             }
         })
     }
