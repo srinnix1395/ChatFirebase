@@ -12,6 +12,7 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import com.example.ominext.chatfirebase.R
 import com.example.ominext.chatfirebase.adapter.UsersAdapter
+import com.example.ominext.chatfirebase.adapter.payload.StatusPayload
 import com.example.ominext.chatfirebase.model.User
 import com.example.ominext.chatfirebase.presenter.ChatListPresenter
 
@@ -56,5 +57,9 @@ class ChatListFragment : Fragment() {
     fun disableProgressbar() {
         pbLoading.isEnabled = false
         pbLoading.visibility = View.GONE
+    }
+
+    fun updateStatus(index: Int, status: Int) {
+        mAdapter.notifyItemChanged(index, StatusPayload(status))
     }
 }
