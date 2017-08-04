@@ -62,5 +62,5 @@ object ChatConstant {
     val USERS = "users"
     val USER = "user"
     val CONVERSATIONS = "CONVERSATIONS"
-
+    val STATUS = "STATUS"
 }

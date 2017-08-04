@@ -10,7 +10,9 @@ import android.widget.Toast
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.example.ominext.chatfirebase.ChatApplication
 import com.example.ominext.chatfirebase.R
+import com.example.ominext.chatfirebase.model.Status
 import com.example.ominext.chatfirebase.model.User
 import com.example.ominext.plaidfork.ui.chat.ChatConstant
 import com.google.android.gms.auth.api.Auth
@@ -35,8 +37,8 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         @JvmField val RC_SIGN_IN = 12
     }
 
-    lateinit var authFirebase: FirebaseAuth
-    var userFirebase: FirebaseUser? = null
+    var authFirebase: FirebaseAuth? = ChatApplication.app?.firebaseAuth
+    var userFirebase: FirebaseUser? = ChatApplication.app?.firebaseUser
     lateinit var mGoogleApiClient: GoogleApiClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,8 +46,6 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         setContentView(R.layout.activity_login)
         ButterKnife.bind(this)
 
-        authFirebase = FirebaseAuth.getInstance()
-        userFirebase = authFirebase.currentUser
         if (userFirebase != null) {
             val intent = Intent(this, ChatListActivity::class.java)
             startActivity(intent)
@@ -89,8 +89,8 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
 
     private fun firebaseAuthWithGoogle(account: GoogleSignInAccount?) {
         val credential = GoogleAuthProvider.getCredential(account?.idToken, null)
-        authFirebase.signInWithCredential(credential)
-                .addOnCompleteListener(this, { task ->
+        authFirebase?.signInWithCredential(credential)
+                ?.addOnCompleteListener(this, { task ->
                     if (task.isSuccessful) {
                         addUserToDatabase(account)
                         // Sign in success, update UI with the signed-in user's information
@@ -105,10 +105,11 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
     }
 
     private fun addUserToDatabase(account: GoogleSignInAccount?) {
-        userFirebase = authFirebase.currentUser
-        val user = User(userFirebase?.uid, account?.email, account?.displayName, account?.photoUrl?.toString())
+        userFirebase = authFirebase?.currentUser
+        val user = User(userFirebase?.uid, account?.email, account?.displayName, account?.photoUrl?.toString(), Status.ONLINE.ordinal)
         val db = FirebaseDatabase.getInstance().reference
         db.child(ChatConstant.USERS).child(user.uid).setValue(user)
+        db.child(ChatConstant.USERS).child(user.uid).child(ChatConstant.STATUS).onDisconnect().setValue(Status.OFFLINE.ordinal)
     }
 
     private fun moveToMainFragment() {
