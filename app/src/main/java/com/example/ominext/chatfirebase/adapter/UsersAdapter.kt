@@ -23,6 +23,7 @@ class UsersAdapter(val list: ArrayList<User>,
 
         if (payloads.last() is StatusPayload) {
             holder?.bindStatus(list[position])
+            holder?.bindLastOnline(list[position])
         }
     }
     override fun onBindViewHolder(holder: UserViewHolder?, position: Int) {

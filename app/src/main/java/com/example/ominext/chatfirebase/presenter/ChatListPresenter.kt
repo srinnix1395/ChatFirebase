@@ -1,5 +1,6 @@
 package com.example.ominext.chatfirebase.presenter
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -8,6 +9,7 @@ import com.example.ominext.chatfirebase.model.User
 import com.example.ominext.chatfirebase.view.ChatListFragment
 import com.example.ominext.chatfirebase.view.DetailChatActivity
 import com.example.ominext.plaidfork.ui.chat.ChatConstant
+import com.example.ominext.plaidfork.ui.chat.Utils
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 
@@ -21,14 +23,16 @@ class ChatListPresenter {
     lateinit var listUser: ArrayList<User>
     var firebaseUser: FirebaseUser? = ChatApplication.app?.firebaseUser
 
-    var offset: Double = 0.0
-
     fun addView(fragment: ChatListFragment) {
         view = fragment
         listUser = ArrayList()
     }
 
-    fun onClickItem(position: Int) {
+    fun onClickItem(context: Context, position: Int) {
+        if (!Utils.isNetworkAvailable(context)) {
+            Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show()
+            return
+        }
         val intent = Intent(view.context, DetailChatActivity::class.java)
         val bundle = Bundle()
         bundle.putParcelable(ChatConstant.USER, listUser[position])

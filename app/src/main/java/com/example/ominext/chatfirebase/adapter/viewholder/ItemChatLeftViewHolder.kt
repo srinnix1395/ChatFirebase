@@ -10,8 +10,8 @@ import butterknife.ButterKnife
 import butterknife.OnClick
 import com.bumptech.glide.Glide
 import com.example.ominext.chatfirebase.R
-import com.example.ominext.plaidfork.ui.chat.ChatConstant
 import com.example.ominext.plaidfork.ui.chat.Message
+import com.example.ominext.plaidfork.ui.chat.TypeMessage
 import com.example.ominext.plaidfork.ui.chat.Utils
 
 /**
@@ -58,29 +58,29 @@ class ItemChatLeftViewHolder(itemView: View,
     }
 
     private fun bindDataMessage(message: Message) {
-        tvTime!!.text = Utils.getTimeAgoMessage(message.createdAt)
+        tvTime.text = Utils.getTimeAgoMessage(message.createdAt)
         Utils.hideView(imvTyping)
 
         when (message.messageType) {
-            ChatConstant.MSG_TYPE_TEXT -> {
-                tvMessage!!.text = message.message
+            TypeMessage.TEXT.name -> {
+                tvMessage.text = message.message
 
                 Utils.showView(tvMessage)
                 Utils.hideView(imvHeart)
                 Utils.hideView(cardViewImage)
-                imvImage!!.setImageDrawable(null)
+                imvImage.setImageDrawable(null)
             }
-            ChatConstant.MSG_TYPE_ICON_HEART -> {
-                tvMessage!!.text = ""
+            TypeMessage.LIKE.name -> {
+                tvMessage.text = ""
 
                 Utils.hideView(tvMessage)
                 Utils.showView(imvHeart)
                 Utils.hideView(cardViewImage)
-                imvImage!!.setImageDrawable(null)
+                imvImage.setImageDrawable(null)
             }
-            ChatConstant.MSG_TYPE_MEDIA -> {
-                tvMessage!!.text = ""
-                tvMessage!!.visibility = View.INVISIBLE
+            TypeMessage.MEDIA.name-> {
+                tvMessage.text = ""
+                tvMessage.visibility = View.INVISIBLE
                 Utils.hideView(imvHeart)
 
                 Utils.showView(cardViewImage)
@@ -95,8 +95,8 @@ class ItemChatLeftViewHolder(itemView: View,
     }
 
     private fun bindDataMessageTyping() {
-        tvMessage!!.text = ""
-        tvTime!!.text = ""
+        tvMessage.text = ""
+        tvTime.text = ""
 
 //        com.example.ominext.plaidfork.ui.chat.Utils.showView(imvTyping)
 //        com.example.ominext.plaidfork.ui.chat.Utils.hideView(tvMessage)

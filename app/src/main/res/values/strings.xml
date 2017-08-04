@@ -7,5 +7,11 @@
     <string name="close">Đóng</string>
 
     <string name="server_client_id">536758381606-1voblmen1fb90t31ltnckggskm47migl.apps.googleusercontent.com</string>
+    <string name="just_now">Vừa xong</string>
+    <string name="minute_ago">phút trước</string>
+    <string name="hour_ago">giờ trước</string>
+    <string name="yesterday">Ngày hôm qua</string>
+    <string name="day_ago">ngày trước</string>
+    <string name="week_ago">tuần trước</string>
 
 </resources>

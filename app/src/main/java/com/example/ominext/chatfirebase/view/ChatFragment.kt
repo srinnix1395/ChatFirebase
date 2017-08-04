@@ -11,13 +11,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.example.ominext.chatfirebase.R
 import com.example.ominext.chatfirebase.adapter.ChatAdapter
+import com.example.ominext.chatfirebase.model.LoadingItem
+import com.example.ominext.chatfirebase.model.Status
 import com.example.ominext.chatfirebase.presenter.ChatPresenter
 import com.example.ominext.chatfirebase.widget.EndlessScrollUpListener
+import com.example.ominext.plaidfork.ui.chat.Message
+import com.example.ominext.plaidfork.ui.chat.Utils
 
 /**
  * Created by Ominext on 8/1/2017.
@@ -32,6 +38,15 @@ class ChatFragment : Fragment() {
 
     @BindView(R.id.imageview_send)
     lateinit var imvSend: ImageView
+
+    @BindView(R.id.textview_name)
+    lateinit var tvName: TextView
+
+    @BindView(R.id.textview_status)
+    lateinit var tvStatus: TextView
+
+    @BindView(R.id.progressbar_loading)
+    lateinit var pbLoading: ProgressBar
 
     val mPresenter: ChatPresenter = ChatPresenter()
 
@@ -50,17 +65,25 @@ class ChatFragment : Fragment() {
         ButterKnife.bind(this, view!!)
         mPresenter.getData(arguments)
 
+        tvName.text = mPresenter.userFriend?.name ?: ""
+        tvStatus.text = if (mPresenter.userFriend?.status == Status.ONLINE.name) {
+            "Đang hoạt động"
+        } else {
+            Utils.getTimeAgoUser(context, mPresenter.userFriend?.lastOnline!!)
+        }
+
         val layoutManager: LinearLayoutManager = LinearLayoutManager(context)
         val scrollListener: EndlessScrollUpListener = object : EndlessScrollUpListener(layoutManager) {
             override fun onLoadMore() {
-                mPresenter.onLoadMessage()
+                mPresenter.onLoadMessage(context)
             }
         }
         rvChat.layoutManager = layoutManager
         rvChat.addOnScrollListener(scrollListener)
-        mAdapter = ChatAdapter(context, mPresenter.listMessage, mPresenter.urlImage, {
-
+        mAdapter = ChatAdapter(mPresenter.listMessage, mPresenter.currentUser, mPresenter.userFriend, {
+            mPresenter.onLoadMessage(context)
         })
+        rvChat.adapter = mAdapter
 
         etMessage.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
@@ -79,10 +102,48 @@ class ChatFragment : Fragment() {
                 }
             }
         })
+
+        mPresenter.onLoadMessage(context)
     }
 
     @OnClick(R.id.imageview_send)
     fun onClickSend() {
-        mPresenter.sendMessage(etMessage.text.toString(), imvSend.drawable.level)
+        mPresenter.sendMessage(context, etMessage.text.toString(), imvSend.drawable.level)
+    }
+
+    fun insertMessage(message: Message) {
+        mAdapter.add(message = message)
+        etMessage.text.clear()
+    }
+
+    fun showProgressBar(b: Boolean) {
+        pbLoading.isEnabled = b
+        if (b) {
+            pbLoading.visibility = View.VISIBLE
+        } else {
+            pbLoading.visibility = View.GONE
+        }
+    }
+
+    fun addLoadingType() {
+        val size = mPresenter.listMessage.size
+        if (size > 0 && mPresenter.listMessage[size - 1] != ChatAdapter.ITEM_LOADING) {
+            mPresenter.listMessage.add(0, LoadingItem())
+            rvChat.post {
+                mAdapter.notifyItemInserted(0)
+            }
+        }
+    }
+
+    fun removeLoadingType(position: Int) {
+        mAdapter.notifyItemRemoved(position)
+    }
+
+    fun addMessage(messages: ArrayList<Message>, position: Int) {
+        mAdapter.addAll(messages, position)
+    }
+
+    fun scrollToBottom() {
+        rvChat.scrollToPosition(mPresenter.listMessage.size - 1)
     }
 }

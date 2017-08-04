@@ -11,12 +11,12 @@ import android.support.v7.widget.RecyclerView
 abstract class EndlessScrollUpListener(private val layoutManager: LinearLayoutManager) : RecyclerView.OnScrollListener() {
     private var isLoading: Boolean = false
     private var previousTotalItemCount = 0
-    private val visibleThreshold: Int = 5
+    private val visibleThreshold: Int = 2
 
     override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
         super.onScrolled(recyclerView, dx, dy)
 
-        if (dy > 0) {
+        if (dy >= 0) {
             return
         }
         val totalItemCount = layoutManager.itemCount

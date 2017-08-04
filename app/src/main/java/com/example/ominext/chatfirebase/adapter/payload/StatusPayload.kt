@@ -5,4 +5,4 @@ package com.example.ominext.chatfirebase.adapter.payload
  */
 
 
-class StatusPayload(val status: Int)
+class StatusPayload(val status: String)

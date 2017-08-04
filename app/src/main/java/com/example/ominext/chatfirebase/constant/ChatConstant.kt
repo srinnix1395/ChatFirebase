@@ -38,9 +38,7 @@ object ChatConstant {
 
     val TYPING = 0
     val PENDING = 1
-    val SERVER_RECEIVED = 2
-    val FRIEND_RECEIVED = 3
-    val HANDLE_COMPLETE = 4
+    val COMPLETE = 2
 
     //chat item
     val SINGLE = 0
@@ -61,6 +59,7 @@ object ChatConstant {
     //
     val USERS = "users"
     val USER = "user"
-    val CONVERSATIONS = "CONVERSATIONS"
-    val STATUS = "STATUS"
+    val CONVERSATIONS = "conversations"
+    val STATUS = "status"
+    val LAST_ONLINE = "lastOnline"
 }

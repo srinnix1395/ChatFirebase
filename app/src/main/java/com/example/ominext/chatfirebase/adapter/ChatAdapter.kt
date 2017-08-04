@@ -1,6 +1,5 @@
 package com.example.ominext.chatfirebase.adapter
 
-import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,21 +7,21 @@ import com.example.ominext.chatfirebase.R
 import com.example.ominext.chatfirebase.adapter.payload.StatusMessagePayload
 import com.example.ominext.chatfirebase.adapter.viewholder.LoadingViewHolder
 import com.example.ominext.chatfirebase.model.LoadingItem
-import com.example.ominext.chatfirebase.util.SharedPreUtils
+import com.example.ominext.chatfirebase.model.User
 import com.example.ominext.plaidfork.ui.chat.Message
 import com.example.ominext.plaidfork.ui.chat.adapter.viewholder.ItemChatLeftViewHolder
 import com.example.ominext.plaidfork.ui.chat.adapter.viewholder.ItemChatRightViewHolder
 import com.example.ominext.plaidfork.ui.chat.adapter.viewholder.ItemChatTimeViewHolder
-import java.util.*
+import com.google.firebase.auth.FirebaseUser
 
 /**
  * Created by Ominext on 8/2/2017.
  */
 
 
-class ChatAdapter(context: Context,
-                  val arrayList: ArrayList<Any>,
-                  val urlImage: String?,
+class ChatAdapter(val listMessage: ArrayList<Any>,
+                  val currentUser: FirebaseUser?,
+                  val friendUser: User?,
                   val mRetryListener: (() -> Unit)? = null) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), ItemChatLeftViewHolder.AdapterListener {
 
     companion object {
@@ -32,14 +31,12 @@ class ChatAdapter(context: Context,
         @JvmField val ITEM_TIME = 3
     }
 
-    private val currentUserID: String? = SharedPreUtils.get(context).getUserId()
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder? {
         when (viewType) {
             ITEM_LEFT -> {
                 val view = LayoutInflater.from(parent.context)
                         .inflate(R.layout.item_chat_left, parent, false)
-                return ItemChatLeftViewHolder(view, urlImage, this)
+                return ItemChatLeftViewHolder(view, friendUser?.photo, this)
             }
             ITEM_RIGHT -> {
                 val view = LayoutInflater.from(parent.context)
@@ -74,7 +71,7 @@ class ChatAdapter(context: Context,
         //        }
 
         if (holder is ItemChatRightViewHolder && payloads[0] is StatusMessagePayload) {
-            holder.bindStatusMessage((payloads[0] as StatusMessagePayload).status)
+            holder.bindStatusMessage(listMessage[position] as Message)
             return
         }
     }
@@ -82,30 +79,30 @@ class ChatAdapter(context: Context,
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
         when (getItemViewType(position)) {
             ITEM_LOADING -> {
-                (holder as? LoadingViewHolder)?.bindData(arrayList[position] as LoadingItem)
+                (holder as? LoadingViewHolder)?.bindData(listMessage[position] as LoadingItem)
             }
             ITEM_LEFT -> {
-                (holder as? ItemChatLeftViewHolder)?.bindData(arrayList[position] as Message)
+                (holder as? ItemChatLeftViewHolder)?.bindData(listMessage[position] as Message)
             }
             ITEM_RIGHT -> {
-                (holder as? ItemChatRightViewHolder)?.bindData(arrayList[position] as Message)
+                (holder as? ItemChatRightViewHolder)?.bindData(listMessage[position] as Message)
             }
             ITEM_TIME -> {
-                (holder as? ItemChatTimeViewHolder)?.bindData(arrayList[position] as Long)
+                (holder as? ItemChatTimeViewHolder)?.bindData(listMessage[position] as Long)
             }
         }
     }
 
     override fun getItemCount(): Int {
-        return arrayList.size
+        return listMessage.size
     }
 
     override fun getItemViewType(position: Int): Int {
-        val any = arrayList[position]
+        val any = listMessage[position]
 
         return when (any) {
             is LoadingItem -> ITEM_LOADING
-            is Message -> if (any.idSender == currentUserID) {
+            is Message -> if (any.idSender == currentUser?.uid) {
                 ITEM_RIGHT
             } else {
                 ITEM_LEFT
@@ -118,6 +115,16 @@ class ChatAdapter(context: Context,
         if (position == 0) {
             return true
         }
-        return arrayList[position - 1] !is Long
+        return listMessage[position - 1] !is Long
+    }
+
+    fun add(index: Int = listMessage.size, message: Message) {
+        listMessage.add(index, message)
+        notifyItemInserted(index)
+    }
+
+    fun addAll(messages: ArrayList<Message>, position: Int) {
+        listMessage.addAll(position, messages)
+        notifyItemRangeInserted(position, messages.count())
     }
 }

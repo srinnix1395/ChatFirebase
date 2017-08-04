@@ -10,8 +10,9 @@ import butterknife.ButterKnife
 import butterknife.OnClick
 import com.bumptech.glide.Glide
 import com.example.ominext.chatfirebase.R
-import com.example.ominext.plaidfork.ui.chat.ChatConstant
 import com.example.ominext.plaidfork.ui.chat.Message
+import com.example.ominext.plaidfork.ui.chat.StatusMessage
+import com.example.ominext.plaidfork.ui.chat.TypeMessage
 import com.example.ominext.plaidfork.ui.chat.Utils
 
 /**
@@ -48,7 +49,7 @@ class ItemChatRightViewHolder(itemView: View, private val adapterListener: ItemC
         tvTime.text = Utils.getTimeAgoMessage(message.createdAt)
 
         when (message.messageType) {
-            ChatConstant.MSG_TYPE_TEXT -> {
+            TypeMessage.TEXT.name -> {
                 tvMessage.text = message.message
 
                 Utils.showView(tvMessage)
@@ -56,7 +57,7 @@ class ItemChatRightViewHolder(itemView: View, private val adapterListener: ItemC
                 Utils.hideView(cardViewImage)
                 imvImage.setImageDrawable(null)
             }
-            ChatConstant.MSG_TYPE_ICON_HEART -> {
+            TypeMessage.LIKE.name -> {
                 tvMessage.text = ""
 
                 tvMessage.visibility = View.INVISIBLE
@@ -64,7 +65,7 @@ class ItemChatRightViewHolder(itemView: View, private val adapterListener: ItemC
                 Utils.hideView(cardViewImage)
                 imvImage.setImageDrawable(null)
             }
-            ChatConstant.MSG_TYPE_MEDIA -> {
+            TypeMessage.MEDIA.name -> {
                 tvMessage.text = ""
                 tvMessage.visibility = View.INVISIBLE
                 Utils.hideView(imvHeart)
@@ -79,25 +80,25 @@ class ItemChatRightViewHolder(itemView: View, private val adapterListener: ItemC
             }
         }
 
-        bindStatusMessage(message.status)
+        bindStatusMessage(message)
     }
 
-    fun bindStatusMessage(status: Int) {
-        when (status) {
-            ChatConstant.PENDING -> {
+    fun bindStatusMessage(message: Message) {
+        when (message.status) {
+            StatusMessage.PENDING.name -> {
                 imvSeen.setImageResource(R.drawable.ic_circle)
             }
-            ChatConstant.SERVER_RECEIVED -> {
-                imvSeen.setImageResource(R.drawable.ic_check_outline)
-            }
-            ChatConstant.FRIEND_RECEIVED -> {
+            StatusMessage.COMPLETE.name -> {
                 imvSeen.setImageResource(R.drawable.ic_check_fill)
             }
-            ChatConstant.HANDLE_COMPLETE -> {
-                if (imvSeen.drawable != null) {
-                    imvSeen.setImageDrawable(null)
-                }
-            }
+//            ChatConstant.FRIEND_RECEIVED -> {
+//                imvSeen.setImageResource(R.drawable.ic_check_fill)
+//            }
+//            ChatConstant.HANDLE_COMPLETE -> {
+//                if (imvSeen.drawable != null) {
+//                    imvSeen.setImageDrawable(null)
+//                }
+//            }
         }
     }
 

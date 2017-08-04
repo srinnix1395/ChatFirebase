@@ -7,40 +7,35 @@ package com.example.ominext.plaidfork.ui.chat
 
 class Message {
 
-//    @SerializedName("_id")
+    //    @SerializedName("_id")
     var id: String? = null
 
-//    @SerializedName("_id_sender")
+    //    @SerializedName("_id_sender")
     var idSender: String? = null
 
-//    @SerializedName("_id_receiver")
+    //    @SerializedName("_id_receiver")
     var idReceiver: String? = null
 
-//    @SerializedName("_id_conversation")
-    var conversationId: String? = null
-
-//    @SerializedName("message")
+    //    @SerializedName("message")
     var message: String? = null
 
-//    @SerializedName("message_type")
-    var messageType: Int = 0
+    //    @SerializedName("message_type")
+    var messageType: String = TypeMessage.TEXT.name
 
-//    @SerializedName("created_at")
+    //    @SerializedName("created_at")
     var createdAt: Long = 0
 
-//    @SerializedName("status")
-    var status: Int = 0
+    //    @SerializedName("status")
+    var status: String = StatusMessage.PENDING.name
 
-//    @SerializedName("is_seen")
+    //    @SerializedName("is_seen")
     var isSeen: Boolean = false
 
     var isTypingMessage: Boolean = false
 
-    constructor() {
-        messageType = ChatConstant.MSG_TYPE_TEXT
-    }
+    constructor()
 
-    constructor(id: String, idSender: String, idReceiver: String, message: String, createdAt: Long, status: Int, isTypingMessage: Boolean) {
+    constructor(id: String, idSender: String, idReceiver: String, message: String, createdAt: Long, status: String, isTypingMessage: Boolean) {
         this.id = id
         this.idSender = idSender
         this.idReceiver = idReceiver
@@ -59,4 +54,15 @@ class Message {
         this.status = messageSample.status
         this.isTypingMessage = messageSample.isTypingMessage
     }
+}
+
+enum class TypeMessage {
+    LIKE,
+    TEXT,
+    MEDIA
+}
+
+enum class StatusMessage {
+    PENDING,
+    COMPLETE
 }

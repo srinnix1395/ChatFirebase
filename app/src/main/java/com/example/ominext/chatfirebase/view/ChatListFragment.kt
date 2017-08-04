@@ -41,7 +41,7 @@ class ChatListFragment : Fragment() {
         mPresenter.addView(this)
 
         mAdapter = UsersAdapter(mPresenter.listUser, { position ->
-            mPresenter.onClickItem(position)
+            mPresenter.onClickItem(context,position)
         })
         rvUser.setHasFixedSize(true)
         rvUser.layoutManager = LinearLayoutManager(context)
@@ -59,7 +59,7 @@ class ChatListFragment : Fragment() {
         pbLoading.visibility = View.GONE
     }
 
-    fun updateStatus(index: Int, status: Int) {
+    fun updateStatus(index: Int, status: String) {
         mAdapter.notifyItemChanged(index, StatusPayload(status))
     }
 }

@@ -23,7 +23,7 @@ import com.google.android.gms.common.api.GoogleApiClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ServerValue
 
 
 /**
@@ -72,15 +72,15 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        progressBar.isEnabled = false
-        progressBar.visibility = View.GONE
-
         if (requestCode == RC_SIGN_IN) {
             val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data)
             if (result.isSuccess) {
                 val account = result.signInAccount
                 firebaseAuthWithGoogle(account)
             } else {
+                progressBar.isEnabled = false
+                progressBar.visibility = View.GONE
+
                 println(result.status)
                 Toast.makeText(this, "Login failed", Toast.LENGTH_LONG).show()
             }
@@ -93,6 +93,10 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
                 ?.addOnCompleteListener(this, { task ->
                     if (task.isSuccessful) {
                         addUserToDatabase(account)
+
+                        progressBar.isEnabled = false
+                        progressBar.visibility = View.GONE
+
                         // Sign in success, update UI with the signed-in user's information
                         Toast.makeText(this, "Authentication successfully.", Toast.LENGTH_SHORT).show()
                         Handler().postDelayed({
@@ -105,11 +109,13 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
     }
 
     private fun addUserToDatabase(account: GoogleSignInAccount?) {
-        userFirebase = authFirebase?.currentUser
-        val user = User(userFirebase?.uid, account?.email, account?.displayName, account?.photoUrl?.toString(), Status.ONLINE.ordinal)
-        val db = FirebaseDatabase.getInstance().reference
-        db.child(ChatConstant.USERS).child(user.uid).setValue(user)
-        db.child(ChatConstant.USERS).child(user.uid).child(ChatConstant.STATUS).onDisconnect().setValue(Status.OFFLINE.ordinal)
+        ChatApplication.app?.updateUser()
+        userFirebase = ChatApplication.app?.firebaseUser
+        val user = User(userFirebase?.uid, account?.email, account?.displayName, account?.photoUrl?.toString(), Status.ONLINE.name)
+        val db = ChatApplication.app?.db
+        db?.child(ChatConstant.USERS)?.child(user.uid)?.setValue(user)
+        db?.child(ChatConstant.USERS)?.child(user.uid)?.child(ChatConstant.STATUS)?.onDisconnect()?.setValue(Status.OFFLINE.name)
+        db?.child(ChatConstant.USERS)?.child(user.uid)?.child(ChatConstant.LAST_ONLINE)?.onDisconnect()?.setValue(ServerValue.TIMESTAMP)
     }
 
     private fun moveToMainFragment() {

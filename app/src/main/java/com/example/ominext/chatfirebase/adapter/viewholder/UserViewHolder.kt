@@ -10,6 +10,7 @@ import com.bumptech.glide.Glide
 import com.example.ominext.chatfirebase.R
 import com.example.ominext.chatfirebase.model.Status
 import com.example.ominext.chatfirebase.model.User
+import com.example.ominext.plaidfork.ui.chat.Utils
 
 /**
  * Created by Ominext on 8/2/2017.
@@ -25,6 +26,9 @@ class UserViewHolder(view: View,
 
     @BindView(R.id.imvStatus)
     lateinit var imvStatus: ImageView
+
+    @BindView(R.id.tvLastOnline)
+    lateinit var tvLastOnline: TextView
 
     init {
         ButterKnife.bind(this, itemView)
@@ -42,13 +46,22 @@ class UserViewHolder(view: View,
         tvName.text = user.name
 
         bindStatus(user)
+        bindLastOnline(user)
     }
 
     fun bindStatus(user: User) {
-        if (user.status == Status.ONLINE.ordinal) {
+        if (user.status == Status.ONLINE.name) {
             imvStatus.setImageResource(R.drawable.ic_status_online)
         } else {
             imvStatus.setImageResource(R.drawable.ic_status_offline)
+        }
+    }
+
+    fun bindLastOnline(user: User) {
+        if (user.status == Status.ONLINE.name) {
+            tvLastOnline.text = "Đang online"
+        } else {
+            tvLastOnline.text = Utils.getTimeAgoUser(itemView.context, user.lastOnline)
         }
     }
 }
