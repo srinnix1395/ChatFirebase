@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.ominext.chatfirebase.R
+import com.example.ominext.chatfirebase.adapter.payload.StatusPayload
 import com.example.ominext.chatfirebase.adapter.viewholder.UserViewHolder
 import com.example.ominext.chatfirebase.model.User
 
@@ -13,6 +14,17 @@ import com.example.ominext.chatfirebase.model.User
 class UsersAdapter(val list: ArrayList<User>,
                    val onClickItem: (position: Int) -> Unit) : RecyclerView.Adapter<UserViewHolder>() {
 
+
+    override fun onBindViewHolder(holder: UserViewHolder?, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position)
+            return
+        }
+
+        if (payloads.last() is StatusPayload) {
+            holder?.bindStatus(list[position])
+        }
+    }
     override fun onBindViewHolder(holder: UserViewHolder?, position: Int) {
         holder?.bindData(list[position])
     }
