@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="56dp"
     android:background="?selectableItemBackground">
@@ -10,7 +11,20 @@
         android:layout_height="44dp"
         android:layout_centerVertical="true"
         android:layout_marginLeft="16dp"
-        android:layout_marginRight="24dp" />
+        android:layout_marginRight="24dp"
+        tools:src="@drawable/dummy" />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/imvStatus"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_alignBottom="@+id/imvImage"
+        android:layout_alignRight="@+id/imvImage"
+        android:layout_marginBottom="-2dp"
+        android:layout_marginRight="-2dp"
+        android:background="@drawable/background_status"
+        android:padding="2dp"
+        tools:src="@drawable/ic_status_online" />
 
     <TextView
         android:id="@+id/tvName"
