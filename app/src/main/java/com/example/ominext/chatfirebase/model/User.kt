@@ -15,11 +15,14 @@ class User() : Parcelable {
 
     var photo: String? = null
 
-    constructor(uid: String?, email: String?, name: String?, photo: String?) : this() {
+    var status: Int = Status.ONLINE.ordinal
+
+    constructor(uid: String?, email: String?, name: String?, photo: String?, status: Int) : this() {
         this.uid = uid
         this.email = email
         this.name = name
         this.photo = photo
+        this.status = status
     }
 
     companion object {
@@ -33,7 +36,8 @@ class User() : Parcelable {
             source.readString(),
             source.readString(),
             source.readString(),
-            source.readString()
+            source.readString(),
+            source.readInt()
     )
 
     override fun describeContents() = 0
@@ -43,10 +47,11 @@ class User() : Parcelable {
         dest.writeString(email)
         dest.writeString(name)
         dest.writeString(photo)
+        dest.writeInt(status)
     }
 }
 
-enum class Status{
+enum class Status {
     OFFLINE,
     ONLINE
 }
