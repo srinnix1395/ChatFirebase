@@ -4,11 +4,10 @@ import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import com.example.ominext.chatfirebase.ChatApplication
-import com.example.ominext.chatfirebase.model.LoadingItem
-import com.example.ominext.chatfirebase.model.User
-import com.example.ominext.plaidfork.ui.chat.*
-import com.example.ominext.plaidfork.ui.chat.view.ChatFragment
-import com.google.firebase.auth.FirebaseAuth
+import com.example.ominext.chatfirebase.constant.ChatConstant
+import com.example.ominext.chatfirebase.model.*
+import com.example.ominext.chatfirebase.util.Utils
+import com.example.ominext.chatfirebase.view.ChatFragment
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import java.util.*
@@ -27,6 +26,12 @@ class ChatPresenter {
     lateinit var conversationKey: String
     var pivotMessageId: String? = null
     var page: Int = 1
+    var isFirst: Boolean = true
+
+    fun addView(chatFragment: ChatFragment) {
+        view = chatFragment
+        currentUser = ChatApplication.app?.firebaseUser
+    }
 
     fun getData(arguments: Bundle) {
         userFriend = arguments.getParcelable(ChatConstant.USER)
@@ -37,11 +42,6 @@ class ChatPresenter {
         }
 
         conversationRef = ChatApplication.app?.db?.child(ChatConstant.CONVERSATIONS)?.child(conversationKey)?.ref
-    }
-
-    fun addView(chatFragment: ChatFragment) {
-        view = chatFragment
-        currentUser = FirebaseAuth.getInstance().currentUser
     }
 
     fun onLoadMessage(context: Context) {
@@ -94,8 +94,38 @@ class ChatPresenter {
                         view?.removeLoadingType(sizeList - 1)
                     }
                 }
+//                addListener()
             }
         })
+    }
+
+    private fun addListener() {
+        if (!isFirst) {
+            return
+        }
+
+        conversationRef?.addChildEventListener(object : ChildEventListener {
+            override fun onCancelled(p0: DatabaseError?) {
+
+            }
+
+            override fun onChildMoved(p0: DataSnapshot?, p1: String?) {
+
+            }
+
+            override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
+
+            }
+
+            override fun onChildAdded(p0: DataSnapshot?, p1: String?) {
+
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot?) {
+
+            }
+        })
+        isFirst = false
     }
 
     fun sendMessage(context: Context, text: String, typeMessage: Int) {
@@ -105,12 +135,13 @@ class ChatPresenter {
         }
 
         val message: Message = Message()
+        message.id = System.currentTimeMillis().toString()
         message.idSender = currentUser?.uid
         message.idReceiver = userFriend?.uid
-        message.status = StatusMessage.COMPLETE.name
+        message.status = StatusMessage.PENDING.name
         message.createdAt = System.currentTimeMillis()
 
-        if (typeMessage == 1) {
+        if (typeMessage == 0 || typeMessage == 1) {
             message.messageType = TypeMessage.LIKE.name
             message.message = null
         } else {
@@ -118,10 +149,26 @@ class ChatPresenter {
             message.message = text.trim()
         }
 
-        val idMessage = conversationRef?.push()?.key
-        message.id = idMessage
-        conversationRef?.child(idMessage)?.setValue(message)
-
         view?.insertMessage(message)
+
+        val idMessage = conversationRef?.push()?.key
+
+        conversationRef?.child(idMessage)?.setValue(message)?.addOnCompleteListener {
+            conversationRef?.child(idMessage)?.child(ChatConstant._ID)?.setValue(idMessage)
+            conversationRef?.child(idMessage)?.child(ChatConstant.STATUS)?.setValue(StatusMessage.COMPLETE.name)
+            conversationRef?.child(idMessage)?.child(ChatConstant.CREATED_AT)?.setValue(ServerValue.TIMESTAMP)
+            conversationRef?.child(idMessage)?.child(ChatConstant.CREATED_AT)?.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError?) {
+
+                }
+
+                override fun onDataChange(p0: DataSnapshot?) {
+                    view?.updateStatusMessage(message, idMessage, p0?.value as Long)
+                }
+            })
+        }?.addOnFailureListener {
+            println("fail")
+        }
+
     }
 }

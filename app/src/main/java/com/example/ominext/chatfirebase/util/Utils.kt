@@ -1,4 +1,4 @@
-package com.example.ominext.plaidfork.ui.chat
+package com.example.ominext.chatfirebase.util
 
 import android.content.Context
 import android.net.ConnectivityManager
@@ -64,7 +64,11 @@ object Utils {
                 && mConnectivityManager.activeNetworkInfo.isConnected
     }
 
-    fun getTimeAgoUser(context: Context, time: Long): String {
+    fun getTimeAgoUser(context: Context, time: Long?): String {
+        if (time == null) {
+            return ""
+        }
+
         val now = System.currentTimeMillis()
 
         val diff = now - time

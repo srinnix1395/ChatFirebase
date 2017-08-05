@@ -11,7 +11,7 @@ import com.example.ominext.chatfirebase.model.User
 /**
  * Created by Ominext on 8/2/2017.
  */
-class UsersAdapter(val list: ArrayList<User>,
+class UsersAdapter(val list: ArrayList<User?>,
                    val onClickItem: (position: Int) -> Unit) : RecyclerView.Adapter<UserViewHolder>() {
 
 
@@ -39,7 +39,7 @@ class UsersAdapter(val list: ArrayList<User>,
         return UserViewHolder(view, onClickItem)
     }
 
-    fun addAll(index: Int = list.size, values: MutableCollection<User>) {
+    fun addAll(index: Int = list.size, values: MutableCollection<User?>) {
         list.addAll(values)
         notifyItemRangeInserted(index, values.size)
     }

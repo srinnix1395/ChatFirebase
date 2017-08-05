@@ -2,7 +2,7 @@ package com.example.ominext.chatfirebase
 
 import android.app.Application
 import com.example.ominext.chatfirebase.model.Status
-import com.example.ominext.plaidfork.ui.chat.ChatConstant
+import com.example.ominext.chatfirebase.constant.ChatConstant
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*

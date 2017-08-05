@@ -14,7 +14,7 @@ import com.example.ominext.chatfirebase.ChatApplication
 import com.example.ominext.chatfirebase.R
 import com.example.ominext.chatfirebase.model.Status
 import com.example.ominext.chatfirebase.model.User
-import com.example.ominext.plaidfork.ui.chat.ChatConstant
+import com.example.ominext.chatfirebase.constant.ChatConstant
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions

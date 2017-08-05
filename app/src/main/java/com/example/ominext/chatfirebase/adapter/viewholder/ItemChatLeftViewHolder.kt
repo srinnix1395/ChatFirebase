@@ -1,4 +1,4 @@
-package com.example.ominext.plaidfork.ui.chat.adapter.viewholder
+package com.example.ominext.chatfirebase.adapter.viewholder
 
 import android.support.v7.widget.CardView
 import android.support.v7.widget.RecyclerView
@@ -10,9 +10,9 @@ import butterknife.ButterKnife
 import butterknife.OnClick
 import com.bumptech.glide.Glide
 import com.example.ominext.chatfirebase.R
-import com.example.ominext.plaidfork.ui.chat.Message
-import com.example.ominext.plaidfork.ui.chat.TypeMessage
-import com.example.ominext.plaidfork.ui.chat.Utils
+import com.example.ominext.chatfirebase.model.Message
+import com.example.ominext.chatfirebase.model.TypeMessage
+import com.example.ominext.chatfirebase.util.Utils
 
 /**
  * Created by Ominext on 8/1/2017.
@@ -98,9 +98,9 @@ class ItemChatLeftViewHolder(itemView: View,
         tvMessage.text = ""
         tvTime.text = ""
 
-//        com.example.ominext.plaidfork.ui.chat.Utils.showView(imvTyping)
-//        com.example.ominext.plaidfork.ui.chat.Utils.hideView(tvMessage)
-//        com.example.ominext.plaidfork.ui.chat.Utils.hideView(imvHeart)
+//        com.example.ominext.chatfirebase.util.Utils.showView(imvTyping)
+//        com.example.ominext.chatfirebase.util.Utils.hideView(tvMessage)
+//        com.example.ominext.chatfirebase.util.Utils.hideView(imvHeart)
     }
 
     @OnClick(R.id.textview_itemchatleft_message, R.id.cardview_image, R.id.imageview_heart)
@@ -109,10 +109,10 @@ class ItemChatLeftViewHolder(itemView: View,
 //            return
 //        }
 //        if (isShowTime) {
-//            com.example.ominext.plaidfork.ui.chat.Utils.collapse(tvTime)
+//            com.example.ominext.chatfirebase.util.Utils.collapse(tvTime)
 //            isShowTime = false
 //        } else {
-//            com.example.ominext.plaidfork.ui.chat.Utils.expand(tvTime)
+//            com.example.ominext.chatfirebase.util.Utils.expand(tvTime)
 //            isShowTime = true
 //        }
     }

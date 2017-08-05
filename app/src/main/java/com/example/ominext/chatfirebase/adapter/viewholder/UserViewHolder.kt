@@ -10,7 +10,7 @@ import com.bumptech.glide.Glide
 import com.example.ominext.chatfirebase.R
 import com.example.ominext.chatfirebase.model.Status
 import com.example.ominext.chatfirebase.model.User
-import com.example.ominext.plaidfork.ui.chat.Utils
+import com.example.ominext.chatfirebase.util.Utils
 
 /**
  * Created by Ominext on 8/2/2017.
@@ -37,31 +37,31 @@ class UserViewHolder(view: View,
         }
     }
 
-    fun bindData(user: User) {
+    fun bindData(user: User?) {
         Glide.with(itemView.context)
-                .load(user.photo)
+                .load(user?.photo)
                 .placeholder(R.drawable.dummy_image)
                 .error(R.drawable.user)
                 .into(imvImage)
-        tvName.text = user.name
+        tvName.text = user?.name
 
         bindStatus(user)
         bindLastOnline(user)
     }
 
-    fun bindStatus(user: User) {
-        if (user.status == Status.ONLINE.name) {
+    fun bindStatus(user: User?) {
+        if (user?.status == Status.ONLINE.name) {
             imvStatus.setImageResource(R.drawable.ic_status_online)
         } else {
             imvStatus.setImageResource(R.drawable.ic_status_offline)
         }
     }
 
-    fun bindLastOnline(user: User) {
-        if (user.status == Status.ONLINE.name) {
+    fun bindLastOnline(user: User?) {
+        if (user?.status == Status.ONLINE.name) {
             tvLastOnline.text = "Đang online"
         } else {
-            tvLastOnline.text = Utils.getTimeAgoUser(itemView.context, user.lastOnline)
+            tvLastOnline.text = Utils.getTimeAgoUser(itemView.context, user?.lastOnline)
         }
     }
 }

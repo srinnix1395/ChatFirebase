@@ -1,4 +1,4 @@
-package com.example.ominext.plaidfork.ui.chat
+package com.example.ominext.chatfirebase.constant
 
 /**
  * Created by Ominext on 8/1/2017.
@@ -19,23 +19,6 @@ object ChatConstant {
 
     //Event END
 
-    //Key data START
-    val _ID = "_id"
-    val _ID_SENDER = "_id_sender"
-    val _ID_RECEIVER = "_id_receiver"
-    val MESSAGE = "message"
-    val _ID_MESSAGE_CLIENT = "id_message_client"
-    val CREATED_AT = "created_at"
-    val IS_TYPING = "is_typing"
-    val _ID_CONVERSATION = "_id_conversation"
-    val MESSAGE_TYPE = "message_type"
-
-    //Key data END
-
-    val STATUS_ONLINE = 1
-    val STATUS_OFFLINE = 2
-    val STATUS_UNDEFINED = 3
-
     val TYPING = 0
     val PENDING = 1
     val COMPLETE = 2
@@ -49,17 +32,15 @@ object ChatConstant {
     val ITEM_MESSAGE_PER_PAGE = 30
     val TIME_DISTANCE: Long = 300000
 
-    val MSG_TYPE_TEXT = 1
-    val MSG_TYPE_ICON_HEART = 2
-    val MSG_TYPE_MEDIA = 3
-
     val NOTIFICATION_ID = 125812
 
 
     //
+    val _ID = "id"
     val USERS = "users"
     val USER = "user"
     val CONVERSATIONS = "conversations"
     val STATUS = "status"
     val LAST_ONLINE = "lastOnline"
+    val CREATED_AT = "createdAt"
 }

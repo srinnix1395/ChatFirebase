@@ -1,4 +1,4 @@
-package com.example.ominext.plaidfork.ui.chat.adapter.viewholder
+package com.example.ominext.chatfirebase.adapter.viewholder
 
 import android.support.v7.widget.CardView
 import android.support.v7.widget.RecyclerView
@@ -10,10 +10,10 @@ import butterknife.ButterKnife
 import butterknife.OnClick
 import com.bumptech.glide.Glide
 import com.example.ominext.chatfirebase.R
-import com.example.ominext.plaidfork.ui.chat.Message
-import com.example.ominext.plaidfork.ui.chat.StatusMessage
-import com.example.ominext.plaidfork.ui.chat.TypeMessage
-import com.example.ominext.plaidfork.ui.chat.Utils
+import com.example.ominext.chatfirebase.model.Message
+import com.example.ominext.chatfirebase.model.StatusMessage
+import com.example.ominext.chatfirebase.model.TypeMessage
+import com.example.ominext.chatfirebase.util.Utils
 
 /**
  * Created by Ominext on 8/1/2017.

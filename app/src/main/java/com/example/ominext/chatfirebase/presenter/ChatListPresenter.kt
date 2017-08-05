@@ -1,31 +1,94 @@
 package com.example.ominext.chatfirebase.presenter
 
+import android.arch.lifecycle.Lifecycle
+import android.arch.lifecycle.LifecycleObserver
+import android.arch.lifecycle.LifecycleRegistry
+import android.arch.lifecycle.OnLifecycleEvent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import com.example.ominext.chatfirebase.ChatApplication
+import com.example.ominext.chatfirebase.constant.ChatConstant
 import com.example.ominext.chatfirebase.model.User
+import com.example.ominext.chatfirebase.util.Utils
 import com.example.ominext.chatfirebase.view.ChatListFragment
 import com.example.ominext.chatfirebase.view.DetailChatActivity
-import com.example.ominext.plaidfork.ui.chat.ChatConstant
-import com.example.ominext.plaidfork.ui.chat.Utils
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
+import io.reactivex.Observable
 
 /**
  * Created by Ominext on 8/2/2017.
  */
-class ChatListPresenter {
+class ChatListPresenter : LifecycleObserver {
 
-    var db: DatabaseReference? = ChatApplication.app?.db
     lateinit var view: ChatListFragment
-    lateinit var listUser: ArrayList<User>
-    var firebaseUser: FirebaseUser? = ChatApplication.app?.firebaseUser
+    lateinit var listUser: ArrayList<User?>
 
-    fun addView(fragment: ChatListFragment) {
+    var firebaseUser: FirebaseUser? = ChatApplication.app?.firebaseUser
+    var userRef: DatabaseReference? = null
+
+    var childEventListener: ChildEventListener? = null
+    var isRegistered: Boolean = false
+
+    lateinit var lifecycle: LifecycleRegistry
+
+    fun addView(fragment: ChatListFragment, lifecycle: LifecycleRegistry) {
         view = fragment
+        lifecycle.addObserver(this)
+        this.lifecycle = lifecycle
         listUser = ArrayList()
+        userRef = ChatApplication.app?.db?.child(ChatConstant.USERS)?.ref
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    fun onResume() {
+        if (!isRegistered) {
+            registerStatusListener()
+            isRegistered = true
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    fun onPause() {
+        if (isRegistered) {
+            unregisterStatusListener()
+            isRegistered = false
+        }
+    }
+
+    fun registerStatusListener() {
+        childEventListener = userRef?.addChildEventListener(object : ChildEventListener {
+            override fun onCancelled(p0: DatabaseError?) {
+
+            }
+
+            override fun onChildMoved(p0: DataSnapshot?, p1: String?) {
+
+            }
+
+            override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
+                if (lifecycle.currentState == Lifecycle.State.RESUMED) {
+                    val user = p0?.getValue(User::class.java)
+                    updateUser(user)
+                }
+            }
+
+            override fun onChildAdded(p0: DataSnapshot?, p1: String?) {
+
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot?) {
+
+            }
+
+        })
+    }
+
+    fun unregisterStatusListener() {
+        userRef?.removeEventListener(childEventListener)
+        childEventListener = null
     }
 
     fun onClickItem(context: Context, position: Int) {
@@ -41,7 +104,7 @@ class ChatListPresenter {
     }
 
     fun getUsers() {
-        db?.child(ChatConstant.USERS)?.addListenerForSingleValueEvent(object : ValueEventListener {
+        userRef?.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 view.disableProgressbar()
                 Toast.makeText(view.context, p0.message, Toast.LENGTH_SHORT).show()
@@ -49,58 +112,34 @@ class ChatListPresenter {
 
             override fun onDataChange(p0: DataSnapshot) {
                 if (p0.hasChildren()) {
-                    val users = arrayListOf<User>()
-                    p0.children.forEach { snapshot ->
-                        val user = snapshot.getValue(User::class.java)
-                        if (user?.uid != firebaseUser?.uid) {
-                            users.add(user!!)
-                        }
-                    }
-                    listenStatus()
-                    view.insertUser(users)
-                    view.disableProgressbar()
+                    Observable.fromIterable(p0.children)
+                            .map { child ->
+                                child.getValue(User::class.java)
+                            }
+                            .filter { child ->
+                                child?.uid != firebaseUser?.uid
+                            }
+                            .toList()
+                            .subscribe { t1, _ ->
+                                registerStatusListener()
+                                view.insertUser(t1)
+                                view.disableProgressbar()
+                            }
                 }
             }
         })
     }
 
-    private fun listenStatus() {
-        db?.child(ChatConstant.USERS)?.addChildEventListener(object : ChildEventListener {
-            override fun onCancelled(p0: DatabaseError?) {
-
-            }
-
-            override fun onChildMoved(p0: DataSnapshot?, p1: String?) {
-
-            }
-
-            override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
-                val user = p0?.getValue(User::class.java)
-                updateUser(user)
-            }
-
-            override fun onChildAdded(p0: DataSnapshot?, p1: String?) {
-
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot?) {
-
-            }
-
-        })
-    }
 
     private fun updateUser(userChanged: User?) {
-        listUser.forEachIndexed({ index: Int, user: User ->
-            if (userChanged?.uid == user.uid) {
+        listUser.forEachIndexed { index, user ->
+            if (userChanged?.uid == user?.uid) {
                 userChanged?.let {
-                    user.status = userChanged.status
-                    view.updateStatus(index, user.status)
+                    user?.status = userChanged.status
+                    view.updateStatus(index, user?.status)
                 }
                 return
             }
-        })
+        }
     }
-
-
 }

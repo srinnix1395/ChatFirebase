@@ -1,4 +1,4 @@
-package com.example.ominext.plaidfork.ui.chat
+package com.example.ominext.chatfirebase.model
 
 /**
  * Created by Ominext on 8/1/2017.
@@ -7,28 +7,20 @@ package com.example.ominext.plaidfork.ui.chat
 
 class Message {
 
-    //    @SerializedName("_id")
     var id: String? = null
 
-    //    @SerializedName("_id_sender")
     var idSender: String? = null
 
-    //    @SerializedName("_id_receiver")
     var idReceiver: String? = null
 
-    //    @SerializedName("message")
     var message: String? = null
 
-    //    @SerializedName("message_type")
     var messageType: String = TypeMessage.TEXT.name
 
-    //    @SerializedName("created_at")
     var createdAt: Long = 0
 
-    //    @SerializedName("status")
     var status: String = StatusMessage.PENDING.name
 
-    //    @SerializedName("is_seen")
     var isSeen: Boolean = false
 
     var isTypingMessage: Boolean = false

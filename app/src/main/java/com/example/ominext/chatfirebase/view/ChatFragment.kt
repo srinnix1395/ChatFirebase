@@ -1,9 +1,10 @@
-package com.example.ominext.plaidfork.ui.chat.view
+package com.example.ominext.chatfirebase.view
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.Toolbar
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -19,11 +20,11 @@ import butterknife.OnClick
 import com.example.ominext.chatfirebase.R
 import com.example.ominext.chatfirebase.adapter.ChatAdapter
 import com.example.ominext.chatfirebase.model.LoadingItem
+import com.example.ominext.chatfirebase.model.Message
 import com.example.ominext.chatfirebase.model.Status
 import com.example.ominext.chatfirebase.presenter.ChatPresenter
+import com.example.ominext.chatfirebase.util.Utils
 import com.example.ominext.chatfirebase.widget.EndlessScrollUpListener
-import com.example.ominext.plaidfork.ui.chat.Message
-import com.example.ominext.plaidfork.ui.chat.Utils
 
 /**
  * Created by Ominext on 8/1/2017.
@@ -48,13 +49,12 @@ class ChatFragment : Fragment() {
     @BindView(R.id.progressbar_loading)
     lateinit var pbLoading: ProgressBar
 
+    @BindView(R.id.toolbar_detail_chat)
+    lateinit var toolbar: Toolbar
+
     val mPresenter: ChatPresenter = ChatPresenter()
 
     lateinit var mAdapter: ChatAdapter
-
-    init {
-        mPresenter.addView(this)
-    }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return LayoutInflater.from(context).inflate(R.layout.fragment_chat, container, false)
@@ -63,7 +63,14 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         ButterKnife.bind(this, view!!)
+
+        mPresenter.addView(this)
         mPresenter.getData(arguments)
+
+        toolbar.setNavigationIcon(R.drawable.ic_back)
+        toolbar.setNavigationOnClickListener {
+            activity.onBackPressed()
+        }
 
         tvName.text = mPresenter.userFriend?.name ?: ""
         tvStatus.text = if (mPresenter.userFriend?.status == Status.ONLINE.name) {
@@ -127,7 +134,7 @@ class ChatFragment : Fragment() {
 
     fun addLoadingType() {
         val size = mPresenter.listMessage.size
-        if (size > 0 && mPresenter.listMessage[size - 1] != ChatAdapter.ITEM_LOADING) {
+        if (size > 0 && mPresenter.listMessage[size - 1] != ChatAdapter.Companion.ITEM_LOADING) {
             mPresenter.listMessage.add(0, LoadingItem())
             rvChat.post {
                 mAdapter.notifyItemInserted(0)
@@ -144,6 +151,11 @@ class ChatFragment : Fragment() {
     }
 
     fun scrollToBottom() {
+        rvChat.scrollToPosition(mPresenter.listMessage.size - 1)
+    }
+
+    fun updateStatusMessage(oldMessage: Message, newIdMessage: String?, newCreatedAt: Long) {
+        mAdapter.updateMessage(oldMessage, newIdMessage, newCreatedAt)
         rvChat.scrollToPosition(mPresenter.listMessage.size - 1)
     }
 }

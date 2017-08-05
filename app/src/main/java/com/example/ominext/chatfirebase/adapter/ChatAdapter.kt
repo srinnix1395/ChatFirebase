@@ -5,14 +5,16 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.ominext.chatfirebase.R
 import com.example.ominext.chatfirebase.adapter.payload.StatusMessagePayload
+import com.example.ominext.chatfirebase.adapter.viewholder.ItemChatLeftViewHolder
+import com.example.ominext.chatfirebase.adapter.viewholder.ItemChatRightViewHolder
+import com.example.ominext.chatfirebase.adapter.viewholder.ItemChatTimeViewHolder
 import com.example.ominext.chatfirebase.adapter.viewholder.LoadingViewHolder
 import com.example.ominext.chatfirebase.model.LoadingItem
+import com.example.ominext.chatfirebase.model.Message
+import com.example.ominext.chatfirebase.model.StatusMessage
 import com.example.ominext.chatfirebase.model.User
-import com.example.ominext.plaidfork.ui.chat.Message
-import com.example.ominext.plaidfork.ui.chat.adapter.viewholder.ItemChatLeftViewHolder
-import com.example.ominext.plaidfork.ui.chat.adapter.viewholder.ItemChatRightViewHolder
-import com.example.ominext.plaidfork.ui.chat.adapter.viewholder.ItemChatTimeViewHolder
 import com.google.firebase.auth.FirebaseUser
+import java.util.*
 
 /**
  * Created by Ominext on 8/2/2017.
@@ -59,8 +61,8 @@ class ChatAdapter(val listMessage: ArrayList<Any>,
         }
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int, payloads: List<Any>?) {
-        if (payloads!!.isEmpty()) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int, payloads: List<Any>) {
+        if (payloads.isEmpty()) {
             onBindViewHolder(holder, position)
             return
         }
@@ -70,7 +72,7 @@ class ChatAdapter(val listMessage: ArrayList<Any>,
         //            return;
         //        }
 
-        if (holder is ItemChatRightViewHolder && payloads[0] is StatusMessagePayload) {
+        if (holder is ItemChatRightViewHolder && payloads.last() is StatusMessagePayload) {
             holder.bindStatusMessage(listMessage[position] as Message)
             return
         }
@@ -126,5 +128,18 @@ class ChatAdapter(val listMessage: ArrayList<Any>,
     fun addAll(messages: ArrayList<Message>, position: Int) {
         listMessage.addAll(position, messages)
         notifyItemRangeInserted(position, messages.count())
+    }
+
+    fun updateMessage(oldMessage: Message, newIdMessage: String?, newCreatedAt: Long) {
+        val size = listMessage.size
+        for (i in size - 1 downTo 0) {
+            if (listMessage[i] is Message && (listMessage[i] as Message).id == oldMessage.id) {
+                (listMessage[i] as Message).id = newIdMessage
+                (listMessage[i] as Message).createdAt = newCreatedAt
+                (listMessage[i] as Message).status = StatusMessage.COMPLETE.name
+                notifyItemChanged(i, StatusMessagePayload(newIdMessage))
+                return
+            }
+        }
     }
 }
