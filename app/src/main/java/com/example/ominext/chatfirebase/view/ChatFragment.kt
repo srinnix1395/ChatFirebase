@@ -25,6 +25,7 @@ import com.example.ominext.chatfirebase.model.Status
 import com.example.ominext.chatfirebase.presenter.ChatPresenter
 import com.example.ominext.chatfirebase.util.Utils
 import com.example.ominext.chatfirebase.widget.EndlessScrollUpListener
+import java.util.*
 
 /**
  * Created by Ominext on 8/1/2017.
@@ -53,7 +54,6 @@ class ChatFragment : Fragment() {
     lateinit var toolbar: Toolbar
 
     val mPresenter: ChatPresenter = ChatPresenter()
-
     lateinit var mAdapter: ChatAdapter
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -82,13 +82,13 @@ class ChatFragment : Fragment() {
         val layoutManager: LinearLayoutManager = LinearLayoutManager(context)
         val scrollListener: EndlessScrollUpListener = object : EndlessScrollUpListener(layoutManager) {
             override fun onLoadMore() {
-                mPresenter.onLoadMessage(context)
+                mPresenter.onLoadMessage()
             }
         }
         rvChat.layoutManager = layoutManager
         rvChat.addOnScrollListener(scrollListener)
         mAdapter = ChatAdapter(mPresenter.listMessage, mPresenter.currentUser, mPresenter.userFriend, {
-            mPresenter.onLoadMessage(context)
+            mPresenter.onLoadMessage()
         })
         rvChat.adapter = mAdapter
 
@@ -110,7 +110,7 @@ class ChatFragment : Fragment() {
             }
         })
 
-        mPresenter.onLoadMessage(context)
+        mPresenter.onLoadMessage()
     }
 
     @OnClick(R.id.imageview_send)
@@ -118,7 +118,7 @@ class ChatFragment : Fragment() {
         mPresenter.sendMessage(context, etMessage.text.toString(), imvSend.drawable.level)
     }
 
-    fun insertMessage(message: Message) {
+    fun insertMessage(message: Message?) {
         mAdapter.add(message = message)
         etMessage.text.clear()
     }
@@ -146,8 +146,11 @@ class ChatFragment : Fragment() {
         mAdapter.notifyItemRemoved(position)
     }
 
-    fun addMessage(messages: ArrayList<Message>, position: Int) {
+    fun addMessage(messages: ArrayList<Message>, position: Int, page: Int) {
         mAdapter.addAll(messages, position)
+        if (page == 1) {
+            rvChat.scrollToPosition(mPresenter.listMessage.size - 1)
+        }
     }
 
     fun scrollToBottom() {

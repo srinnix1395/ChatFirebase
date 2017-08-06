@@ -32,12 +32,9 @@ class ChatListPresenter : LifecycleObserver {
     var childEventListener: ChildEventListener? = null
     var isRegistered: Boolean = false
 
-    lateinit var lifecycle: LifecycleRegistry
-
     fun addView(fragment: ChatListFragment, lifecycle: LifecycleRegistry) {
         view = fragment
         lifecycle.addObserver(this)
-        this.lifecycle = lifecycle
         listUser = ArrayList()
         userRef = ChatApplication.app?.db?.child(ChatConstant.USERS)?.ref
     }
@@ -69,10 +66,8 @@ class ChatListPresenter : LifecycleObserver {
             }
 
             override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
-                if (lifecycle.currentState == Lifecycle.State.RESUMED) {
-                    val user = p0?.getValue(User::class.java)
-                    updateUser(user)
-                }
+                val user = p0?.getValue(User::class.java)
+                updateUser(user)
             }
 
             override fun onChildAdded(p0: DataSnapshot?, p1: String?) {

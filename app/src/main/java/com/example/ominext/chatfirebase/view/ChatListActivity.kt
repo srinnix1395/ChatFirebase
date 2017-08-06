@@ -1,16 +1,37 @@
 package com.example.ominext.chatfirebase.view
 
+import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.Toolbar
+import butterknife.BindView
+import butterknife.ButterKnife
 import com.example.ominext.chatfirebase.R
 
 /**
  * Created by Ominext on 8/1/2017.
  */
 class ChatListActivity : AppCompatActivity() {
+    @BindView(R.id.toolbar_main)
+    lateinit var toolbar: Toolbar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        ButterKnife.bind(this)
+
+        toolbar.setTitleTextColor(Color.WHITE)
+        toolbar.title = "Fire chat"
+        toolbar.inflateMenu(R.menu.menu_main)
+        toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.mi_sign_out -> signOut()
+            }
+            return@setOnMenuItemClickListener true
+        }
+    }
+
+    private fun signOut() {
+        //todo sign out
     }
 }

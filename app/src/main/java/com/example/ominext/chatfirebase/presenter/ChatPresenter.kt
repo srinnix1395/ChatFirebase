@@ -1,11 +1,14 @@
 package com.example.ominext.chatfirebase.presenter
 
+import android.arch.lifecycle.LifecycleObserver
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
 import android.widget.Toast
 import com.example.ominext.chatfirebase.ChatApplication
 import com.example.ominext.chatfirebase.constant.ChatConstant
 import com.example.ominext.chatfirebase.model.*
+import com.example.ominext.chatfirebase.util.DebugLog
 import com.example.ominext.chatfirebase.util.Utils
 import com.example.ominext.chatfirebase.view.ChatFragment
 import com.google.firebase.auth.FirebaseUser
@@ -15,22 +18,29 @@ import java.util.*
 /**
  * Created by Ominext on 8/2/2017.
  */
-class ChatPresenter {
+class ChatPresenter : LifecycleObserver {
     var view: ChatFragment? = null
 
-    val listMessage: ArrayList<Any> = ArrayList()
+    val listMessage: ArrayList<Any?> = ArrayList()
     var conversationRef: DatabaseReference? = null
 
     var currentUser: FirebaseUser? = null
     var userFriend: User? = null
+
     lateinit var conversationKey: String
     var pivotMessageId: String? = null
     var page: Int = 1
-    var isFirst: Boolean = true
+
+    var isLoadInitial: Boolean = false
+    val handler: Handler = Handler()
+    lateinit var runnable: Runnable
 
     fun addView(chatFragment: ChatFragment) {
         view = chatFragment
         currentUser = ChatApplication.app?.firebaseUser
+        runnable = Runnable {
+            loadMessage(chatFragment.context)
+        }
     }
 
     fun getData(arguments: Bundle) {
@@ -41,11 +51,17 @@ class ChatPresenter {
             conversationKey = userFriend?.uid + currentUser?.uid
         }
 
-        conversationRef = ChatApplication.app?.db?.child(ChatConstant.CONVERSATIONS)?.child(conversationKey)?.ref
+        conversationRef = ChatApplication.app?.db?.child(ChatConstant.CONVERSATIONS)?.child(conversationKey)
+        addListener()
     }
 
-    fun onLoadMessage(context: Context) {
-        if (pivotMessageId != null) {
+    fun onLoadMessage() {
+        handler.removeCallbacks(runnable)
+        handler.postDelayed(runnable, 1500)
+    }
+
+    private fun loadMessage(context: Context) {
+        if (page > 1) {
             view?.addLoadingType()
         } else {
             view?.showProgressBar(true)
@@ -57,15 +73,16 @@ class ChatPresenter {
             query?.endAt(pivotMessageId)
         }
 
-        conversationRef?.orderByKey()?.limitToLast(ChatConstant.ITEM_MESSAGE_PER_PAGE)?.addListenerForSingleValueEvent(object : ValueEventListener {
+        query?.limitToLast(ChatConstant.ITEM_MESSAGE_PER_PAGE)?.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError?) {
-                println(p0?.message)
+                DebugLog.e(p0?.message ?: "null")
                 Toast.makeText(context, "Get message failed", Toast.LENGTH_SHORT).show()
             }
 
-            override fun onDataChange(p0: DataSnapshot) {
+            override fun onDataChange(p0: DataSnapshot?) {
+                DebugLog.i("Data changed: ${p0?.childrenCount ?: 0}")
                 val messages = arrayListOf<Message>()
-                p0.children.forEach { snapshot ->
+                p0?.children?.forEach { snapshot ->
                     val message = snapshot.getValue(Message::class.java)
                     messages.add(message!!)
                 }
@@ -79,11 +96,13 @@ class ChatPresenter {
                     messages.removeAt(0)
 
                     if (page == 1) {
-                        view?.addMessage(messages, 0)
+                        view?.addMessage(messages, 0, page)
                         view?.showProgressBar(false)
                         view?.scrollToBottom()
                     } else {
-                        view?.addMessage(messages, 1)
+                        listMessage.removeAt(sizeList - 1)
+                        view?.removeLoadingType(sizeList - 1)
+                        view?.addMessage(messages, 1, page)
                     }
                     page++
                 } else {
@@ -94,16 +113,13 @@ class ChatPresenter {
                         view?.removeLoadingType(sizeList - 1)
                     }
                 }
-//                addListener()
+
+                isLoadInitial = true
             }
         })
     }
 
     private fun addListener() {
-        if (!isFirst) {
-            return
-        }
-
         conversationRef?.addChildEventListener(object : ChildEventListener {
             override fun onCancelled(p0: DatabaseError?) {
 
@@ -114,18 +130,28 @@ class ChatPresenter {
             }
 
             override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
-
+                DebugLog.i("Child changed: ${p0?.value}")
             }
 
             override fun onChildAdded(p0: DataSnapshot?, p1: String?) {
-
+                if (!isLoadInitial) {
+                    return
+                }
+                DebugLog.i("Child added: ${p0?.value}")
+                val message: Message? = p0?.getValue(Message::class.java)
+                if (listMessage.isNotEmpty()) {
+                    val lastObject = listMessage.last()
+//                    if (lastObject is Message && lastObject) {
+//
+//                    }
+                }
+                view?.insertMessage(message)
             }
 
             override fun onChildRemoved(p0: DataSnapshot?) {
 
             }
         })
-        isFirst = false
     }
 
     fun sendMessage(context: Context, text: String, typeMessage: Int) {

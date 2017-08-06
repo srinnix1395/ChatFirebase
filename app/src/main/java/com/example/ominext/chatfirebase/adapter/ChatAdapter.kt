@@ -21,7 +21,7 @@ import java.util.*
  */
 
 
-class ChatAdapter(val listMessage: ArrayList<Any>,
+class ChatAdapter(val listMessage: ArrayList<Any?>,
                   val currentUser: FirebaseUser?,
                   val friendUser: User?,
                   val mRetryListener: (() -> Unit)? = null) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), ItemChatLeftViewHolder.AdapterListener {
@@ -120,7 +120,7 @@ class ChatAdapter(val listMessage: ArrayList<Any>,
         return listMessage[position - 1] !is Long
     }
 
-    fun add(index: Int = listMessage.size, message: Message) {
+    fun add(index: Int = listMessage.size, message: Message?) {
         listMessage.add(index, message)
         notifyItemInserted(index)
     }
