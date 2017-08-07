@@ -12,9 +12,8 @@ import butterknife.ButterKnife
 import butterknife.OnClick
 import com.example.ominext.chatfirebase.ChatApplication
 import com.example.ominext.chatfirebase.R
-import com.example.ominext.chatfirebase.model.Status
-import com.example.ominext.chatfirebase.model.User
 import com.example.ominext.chatfirebase.constant.ChatConstant
+import com.example.ominext.chatfirebase.model.Status
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -92,7 +91,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         authFirebase?.signInWithCredential(credential)
                 ?.addOnCompleteListener(this, { task ->
                     if (task.isSuccessful) {
-                        addUserToDatabase(account)
+                        addUserToDatabase()
 
                         progressBar.isEnabled = false
                         progressBar.visibility = View.GONE
@@ -108,14 +107,12 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
                 })
     }
 
-    private fun addUserToDatabase(account: GoogleSignInAccount?) {
+    private fun addUserToDatabase() {
         ChatApplication.app?.updateUser()
         userFirebase = ChatApplication.app?.firebaseUser
-        val user = User(userFirebase?.uid, account?.email, account?.displayName, account?.photoUrl?.toString(), Status.ONLINE.name)
-        val db = ChatApplication.app?.db
-        db?.child(ChatConstant.USERS)?.child(user.uid)?.setValue(user)
-        db?.child(ChatConstant.USERS)?.child(user.uid)?.child(ChatConstant.STATUS)?.onDisconnect()?.setValue(Status.OFFLINE.name)
-        db?.child(ChatConstant.USERS)?.child(user.uid)?.child(ChatConstant.LAST_ONLINE)?.onDisconnect()?.setValue(ServerValue.TIMESTAMP)
+        val dbUser = ChatApplication.app?.db?.child(ChatConstant.USERS)?.ref
+        dbUser?.child(userFirebase?.uid)?.child(ChatConstant.STATUS)?.onDisconnect()?.setValue(Status.OFFLINE.name)
+        dbUser?.child(userFirebase?.uid)?.child(ChatConstant.LAST_ONLINE)?.onDisconnect()?.setValue(ServerValue.TIMESTAMP)
     }
 
     private fun moveToMainFragment() {

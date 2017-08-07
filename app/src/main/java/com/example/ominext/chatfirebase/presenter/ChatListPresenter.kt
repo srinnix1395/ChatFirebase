@@ -1,6 +1,5 @@
 package com.example.ominext.chatfirebase.presenter
 
-import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.LifecycleRegistry
 import android.arch.lifecycle.OnLifecycleEvent
@@ -39,7 +38,7 @@ class ChatListPresenter : LifecycleObserver {
         userRef = ChatApplication.app?.db?.child(ChatConstant.USERS)?.ref
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    @OnLifecycleEvent(android.arch.lifecycle.Lifecycle.Event.ON_RESUME)
     fun onResume() {
         if (!isRegistered) {
             registerStatusListener()
@@ -47,7 +46,7 @@ class ChatListPresenter : LifecycleObserver {
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    @OnLifecycleEvent(android.arch.lifecycle.Lifecycle.Event.ON_PAUSE)
     fun onPause() {
         if (isRegistered) {
             unregisterStatusListener()
@@ -112,7 +111,7 @@ class ChatListPresenter : LifecycleObserver {
                                 child.getValue(User::class.java)
                             }
                             .filter { child ->
-                                child?.uid != firebaseUser?.uid
+                                child.uid != firebaseUser?.uid
                             }
                             .toList()
                             .subscribe { t1, _ ->

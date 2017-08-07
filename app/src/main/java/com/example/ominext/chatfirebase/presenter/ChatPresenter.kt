@@ -137,15 +137,15 @@ class ChatPresenter : LifecycleObserver {
                 if (!isLoadInitial) {
                     return
                 }
-                DebugLog.i("Child added: ${p0?.value}")
-                val message: Message? = p0?.getValue(Message::class.java)
-                if (listMessage.isNotEmpty()) {
-                    val lastObject = listMessage.last()
+//                DebugLog.i("Child added: ${p0?.value}")
+//                val message: Message? = p0?.getValue(Message::class.java)
+//                if (listMessage.isNotEmpty()) {
+//                    val lastObject = listMessage.last()
 //                    if (lastObject is Message && lastObject) {
 //
 //                    }
-                }
-                view?.insertMessage(message)
+//                }
+//                view?.insertMessage(message)
             }
 
             override fun onChildRemoved(p0: DataSnapshot?) {
