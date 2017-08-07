@@ -6,7 +6,6 @@ import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.ProgressBar
-import android.widget.Toast
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
@@ -14,6 +13,7 @@ import com.example.ominext.chatfirebase.ChatApplication
 import com.example.ominext.chatfirebase.R
 import com.example.ominext.chatfirebase.constant.ChatConstant
 import com.example.ominext.chatfirebase.model.Status
+import com.example.ominext.chatfirebase.util.toast
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -66,7 +66,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
     }
 
     override fun onConnectionFailed(p0: ConnectionResult) {
-        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show()
+        toast("Google Play Services error.")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -81,7 +81,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
                 progressBar.visibility = View.GONE
 
                 println(result.status)
-                Toast.makeText(this, "Login failed", Toast.LENGTH_LONG).show()
+                toast("Login failed")
             }
         }
     }
@@ -97,12 +97,12 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
                         progressBar.visibility = View.GONE
 
                         // Sign in success, update UI with the signed-in user's information
-                        Toast.makeText(this, "Authentication successfully.", Toast.LENGTH_SHORT).show()
+                        toast("Authentication successfully.")
                         Handler().postDelayed({
                             moveToMainFragment()
                         }, 2000)
                     } else {
-                        Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                        toast("Authentication failed.")
                     }
                 })
     }

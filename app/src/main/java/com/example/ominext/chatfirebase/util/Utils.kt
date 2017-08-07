@@ -3,6 +3,8 @@ package com.example.ominext.chatfirebase.util
 import android.content.Context
 import android.net.ConnectivityManager
 import android.view.View
+import android.widget.Toast
+import com.example.ominext.chatfirebase.ChatApplication
 import com.example.ominext.chatfirebase.R
 import java.text.SimpleDateFormat
 import java.util.*
@@ -98,4 +100,8 @@ object Utils {
 
         return String.format(Locale.getDefault(), "%d %s", diff / YEAR_MILLIS, context.getString(R.string.week_ago))
     }
+}
+
+fun toast(message: String, length: Int = Toast.LENGTH_SHORT) {
+    Toast.makeText(ChatApplication.app, message, length).show()
 }

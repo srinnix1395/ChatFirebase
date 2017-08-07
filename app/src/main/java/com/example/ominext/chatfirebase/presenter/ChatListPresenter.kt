@@ -6,11 +6,11 @@ import android.arch.lifecycle.OnLifecycleEvent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import com.example.ominext.chatfirebase.ChatApplication
 import com.example.ominext.chatfirebase.constant.ChatConstant
 import com.example.ominext.chatfirebase.model.User
 import com.example.ominext.chatfirebase.util.Utils
+import com.example.ominext.chatfirebase.util.toast
 import com.example.ominext.chatfirebase.view.ChatListFragment
 import com.example.ominext.chatfirebase.view.DetailChatActivity
 import com.google.firebase.auth.FirebaseUser
@@ -87,7 +87,7 @@ class ChatListPresenter : LifecycleObserver {
 
     fun onClickItem(context: Context, position: Int) {
         if (!Utils.isNetworkAvailable(context)) {
-            Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show()
+            toast("No internet connection")
             return
         }
         val intent = Intent(view.context, DetailChatActivity::class.java)
@@ -101,7 +101,7 @@ class ChatListPresenter : LifecycleObserver {
         userRef?.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 view.disableProgressbar()
-                Toast.makeText(view.context, p0.message, Toast.LENGTH_SHORT).show()
+                toast(p0.message)
             }
 
             override fun onDataChange(p0: DataSnapshot) {
@@ -111,7 +111,7 @@ class ChatListPresenter : LifecycleObserver {
                                 child.getValue(User::class.java)
                             }
                             .filter { child ->
-                                child.uid != firebaseUser?.uid
+                                child?.uid != firebaseUser?.uid
                             }
                             .toList()
                             .subscribe { t1, _ ->

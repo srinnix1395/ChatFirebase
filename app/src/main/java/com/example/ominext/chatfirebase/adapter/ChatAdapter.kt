@@ -127,7 +127,7 @@ class ChatAdapter(val listMessage: ArrayList<Any?>,
 
     fun addAll(messages: ArrayList<Message>, position: Int) {
         listMessage.addAll(position, messages)
-        notifyItemRangeInserted(position, messages.count())
+        notifyItemRangeInserted(position, messages.size)
     }
 
     fun updateMessage(oldMessage: Message, newIdMessage: String?, newCreatedAt: Long) {
@@ -141,5 +141,10 @@ class ChatAdapter(val listMessage: ArrayList<Any?>,
                 return
             }
         }
+    }
+
+    fun removeItem(position: Int) {
+        listMessage.removeAt(position)
+        notifyItemRemoved(position)
     }
 }

@@ -3,13 +3,13 @@ package com.example.ominext.chatfirebase.presenter
 import android.arch.lifecycle.LifecycleObserver
 import android.content.Context
 import android.os.Bundle
-import android.os.Handler
 import android.widget.Toast
 import com.example.ominext.chatfirebase.ChatApplication
 import com.example.ominext.chatfirebase.constant.ChatConstant
 import com.example.ominext.chatfirebase.model.*
 import com.example.ominext.chatfirebase.util.DebugLog
 import com.example.ominext.chatfirebase.util.Utils
+import com.example.ominext.chatfirebase.util.toast
 import com.example.ominext.chatfirebase.view.ChatFragment
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
@@ -30,17 +30,13 @@ class ChatPresenter : LifecycleObserver {
     lateinit var conversationKey: String
     var pivotMessageId: String? = null
     var page: Int = 1
-
+    var isLoading: Boolean = false
+    var hasNext: Boolean = true
     var isLoadInitial: Boolean = false
-    val handler: Handler = Handler()
-    lateinit var runnable: Runnable
 
     fun addView(chatFragment: ChatFragment) {
         view = chatFragment
         currentUser = ChatApplication.app?.firebaseUser
-        runnable = Runnable {
-            loadMessage(chatFragment.context)
-        }
     }
 
     fun getData(arguments: Bundle) {
@@ -56,19 +52,17 @@ class ChatPresenter : LifecycleObserver {
     }
 
     fun onLoadMessage() {
-        handler.removeCallbacks(runnable)
-        handler.postDelayed(runnable, 1500)
-    }
+        if (isLoading || !hasNext) return
 
-    private fun loadMessage(context: Context) {
         if (page > 1) {
             view?.addLoadingType()
         } else {
             view?.showProgressBar(true)
         }
 
-        val query: Query? = conversationRef?.orderByKey()
+        isLoading = true
 
+        val query: Query? = conversationRef?.orderByKey()
         pivotMessageId?.let {
             query?.endAt(pivotMessageId)
         }
@@ -76,7 +70,8 @@ class ChatPresenter : LifecycleObserver {
         query?.limitToLast(ChatConstant.ITEM_MESSAGE_PER_PAGE)?.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError?) {
                 DebugLog.e(p0?.message ?: "null")
-                Toast.makeText(context, "Get message failed", Toast.LENGTH_SHORT).show()
+                toast("Get message failed")
+                isLoading = false
             }
 
             override fun onDataChange(p0: DataSnapshot?) {
@@ -89,31 +84,25 @@ class ChatPresenter : LifecycleObserver {
 
                 val count = messages.size
 
-                val sizeList = listMessage.size
-
                 if (count > 0) {
                     pivotMessageId = messages[0].id
                     messages.removeAt(0)
-
-                    if (page == 1) {
-                        view?.addMessage(messages, 0, page)
-                        view?.showProgressBar(false)
-                        view?.scrollToBottom()
-                    } else {
-                        listMessage.removeAt(sizeList - 1)
-                        view?.removeLoadingType(sizeList - 1)
-                        view?.addMessage(messages, 1, page)
-                    }
-                    page++
-                } else {
-                    if (page == 1) {
-                        view?.showProgressBar(false)
-                    } else if (listMessage.isNotEmpty() && listMessage.last() is LoadingItem) {
-                        listMessage.removeAt(sizeList - 1)
-                        view?.removeLoadingType(sizeList - 1)
-                    }
                 }
 
+                if (page == 1) {
+                    view?.showProgressBar(false)
+                    view?.addMessage(messages, 0, page)
+                } else {
+                    if (listMessage.isNotEmpty() && listMessage.last() is LoadingItem) {
+                        view?.removeLoadingItem(0)
+                    }
+
+                    view?.addMessage(messages, 0, page)
+                }
+
+                hasNext = count == ChatConstant.ITEM_MESSAGE_PER_PAGE
+                page++
+                isLoading = false
                 isLoadInitial = true
             }
         })
@@ -156,7 +145,7 @@ class ChatPresenter : LifecycleObserver {
 
     fun sendMessage(context: Context, text: String, typeMessage: Int) {
         if (!Utils.isNetworkAvailable(context)) {
-            Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show()
+            toast("No internet connection")
             return
         }
 

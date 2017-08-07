@@ -24,7 +24,6 @@ import com.example.ominext.chatfirebase.model.Message
 import com.example.ominext.chatfirebase.model.Status
 import com.example.ominext.chatfirebase.presenter.ChatPresenter
 import com.example.ominext.chatfirebase.util.Utils
-import com.example.ominext.chatfirebase.widget.EndlessScrollUpListener
 import java.util.*
 
 /**
@@ -80,13 +79,18 @@ class ChatFragment : Fragment() {
         }
 
         val layoutManager: LinearLayoutManager = LinearLayoutManager(context)
-        val scrollListener: EndlessScrollUpListener = object : EndlessScrollUpListener(layoutManager) {
-            override fun onLoadMore() {
-                mPresenter.onLoadMessage()
-            }
-        }
         rvChat.layoutManager = layoutManager
-        rvChat.addOnScrollListener(scrollListener)
+        rvChat.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                if (dy >= 0) return
+
+                if (layoutManager.findFirstVisibleItemPosition() - 1 <= 0) {
+                    mPresenter.onLoadMessage()
+                }
+            }
+        })
         mAdapter = ChatAdapter(mPresenter.listMessage, mPresenter.currentUser, mPresenter.userFriend, {
             mPresenter.onLoadMessage()
         })
@@ -134,7 +138,7 @@ class ChatFragment : Fragment() {
 
     fun addLoadingType() {
         val size = mPresenter.listMessage.size
-        if (size > 0 && mPresenter.listMessage[size - 1] != ChatAdapter.Companion.ITEM_LOADING) {
+        if (size > 0 && mPresenter.listMessage.first() !is LoadingItem) {
             mPresenter.listMessage.add(0, LoadingItem())
             rvChat.post {
                 mAdapter.notifyItemInserted(0)
@@ -142,13 +146,13 @@ class ChatFragment : Fragment() {
         }
     }
 
-    fun removeLoadingType(position: Int) {
-        mAdapter.notifyItemRemoved(position)
+    fun removeLoadingItem(position: Int) {
+        mAdapter.removeItem(position)
     }
 
     fun addMessage(messages: ArrayList<Message>, position: Int, page: Int) {
         mAdapter.addAll(messages, position)
-        if (page == 1) {
+        if (page == 1 && mPresenter.listMessage.isNotEmpty()) {
             rvChat.scrollToPosition(mPresenter.listMessage.size - 1)
         }
     }
