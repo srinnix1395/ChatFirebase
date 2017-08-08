@@ -3,7 +3,6 @@ package com.example.ominext.chatfirebase.presenter
 import android.arch.lifecycle.LifecycleObserver
 import android.content.Context
 import android.os.Bundle
-import android.widget.Toast
 import com.example.ominext.chatfirebase.ChatApplication
 import com.example.ominext.chatfirebase.constant.ChatConstant
 import com.example.ominext.chatfirebase.model.*
@@ -150,7 +149,7 @@ class ChatPresenter : LifecycleObserver {
         }
 
         val message: Message = Message()
-        message.id = System.currentTimeMillis().toString()
+        message.id = conversationRef?.push()?.key
         message.idSender = currentUser?.uid
         message.idReceiver = userFriend?.uid
         message.status = StatusMessage.PENDING.name
@@ -166,24 +165,8 @@ class ChatPresenter : LifecycleObserver {
 
         view?.insertMessage(message)
 
-        val idMessage = conversationRef?.push()?.key
-
-        conversationRef?.child(idMessage)?.setValue(message)?.addOnCompleteListener {
-            conversationRef?.child(idMessage)?.child(ChatConstant._ID)?.setValue(idMessage)
-            conversationRef?.child(idMessage)?.child(ChatConstant.STATUS)?.setValue(StatusMessage.COMPLETE.name)
-            conversationRef?.child(idMessage)?.child(ChatConstant.CREATED_AT)?.setValue(ServerValue.TIMESTAMP)
-            conversationRef?.child(idMessage)?.child(ChatConstant.CREATED_AT)?.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError?) {
-
-                }
-
-                override fun onDataChange(p0: DataSnapshot?) {
-                    view?.updateStatusMessage(message, idMessage, p0?.value as Long)
-                }
-            })
-        }?.addOnFailureListener {
-            println("fail")
+        conversationRef?.child(message.id)?.setValue(message)?.addOnCompleteListener {
+            view?.updateStatusMessage(message, message.id, p0?.value as Long)
         }
-
     }
 }
