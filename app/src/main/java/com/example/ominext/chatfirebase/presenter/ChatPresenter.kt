@@ -85,7 +85,11 @@ class ChatPresenter : LifecycleObserver {
 
                 if (count > 0) {
                     pivotMessageId = messages[0].id
-                    messages.removeAt(0)
+
+                    val isLoadFirst = pivotMessageId != null
+                    if (!isLoadFirst) {
+                        messages.removeAt(0).id
+                    }
                 }
 
                 if (page == 1) {
@@ -165,8 +169,15 @@ class ChatPresenter : LifecycleObserver {
 
         view?.insertMessage(message)
 
-        conversationRef?.child(message.id)?.setValue(message)?.addOnCompleteListener {
-            view?.updateStatusMessage(message, message.id, p0?.value as Long)
-        }
+        conversationRef?.child(message.id)?.setValue(message)
+        conversationRef?.child(message.id)?.child(ChatConstant.CREATED_AT)?.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError?) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot?) {
+                view?.updateStatusMessage(message.id, p0?.getValue(Long::class.java))
+            }
+        })
     }
 }

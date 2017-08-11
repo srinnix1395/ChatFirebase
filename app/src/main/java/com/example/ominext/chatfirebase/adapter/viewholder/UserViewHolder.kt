@@ -7,6 +7,7 @@ import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.example.ominext.chatfirebase.R
 import com.example.ominext.chatfirebase.model.Status
 import com.example.ominext.chatfirebase.model.User
@@ -40,8 +41,9 @@ class UserViewHolder(view: View,
     fun bindData(user: User?) {
         Glide.with(itemView.context)
                 .load(user?.photo)
-                .placeholder(R.drawable.dummy_image)
-                .error(R.drawable.user)
+                .apply(RequestOptions()
+                        .placeholder(R.drawable.dummy_image)
+                        .error(R.drawable.user))
                 .into(imvImage)
         tvName.text = user?.name
 

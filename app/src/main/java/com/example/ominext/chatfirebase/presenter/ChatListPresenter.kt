@@ -2,7 +2,6 @@ package com.example.ominext.chatfirebase.presenter
 
 import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.LifecycleRegistry
-import android.arch.lifecycle.OnLifecycleEvent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -29,29 +28,15 @@ class ChatListPresenter : LifecycleObserver {
     var userRef: DatabaseReference? = null
 
     var childEventListener: ChildEventListener? = null
-    var isRegistered: Boolean = false
+    var isLoadInitial: Boolean = false
 
     fun addView(fragment: ChatListFragment, lifecycle: LifecycleRegistry) {
         view = fragment
         lifecycle.addObserver(this)
         listUser = ArrayList()
         userRef = ChatApplication.app?.db?.child(ChatConstant.USERS)?.ref
-    }
 
-    @OnLifecycleEvent(android.arch.lifecycle.Lifecycle.Event.ON_RESUME)
-    fun onResume() {
-        if (!isRegistered) {
-            registerStatusListener()
-            isRegistered = true
-        }
-    }
-
-    @OnLifecycleEvent(android.arch.lifecycle.Lifecycle.Event.ON_PAUSE)
-    fun onPause() {
-        if (isRegistered) {
-            unregisterStatusListener()
-            isRegistered = false
-        }
+        registerStatusListener()
     }
 
     fun registerStatusListener() {
@@ -65,8 +50,11 @@ class ChatListPresenter : LifecycleObserver {
             }
 
             override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
-                val user = p0?.getValue(User::class.java)
-                updateUser(user)
+                if (isLoadInitial) {
+                    val user = p0?.getValue(User::class.java)
+                    println(user?.uid)
+                    updateUser(user)
+                }
             }
 
             override fun onChildAdded(p0: DataSnapshot?, p1: String?) {
@@ -78,11 +66,6 @@ class ChatListPresenter : LifecycleObserver {
             }
 
         })
-    }
-
-    fun unregisterStatusListener() {
-        userRef?.removeEventListener(childEventListener)
-        childEventListener = null
     }
 
     fun onClickItem(context: Context, position: Int) {
@@ -111,15 +94,15 @@ class ChatListPresenter : LifecycleObserver {
                                 child.getValue(User::class.java)
                             }
                             .filter { child ->
-                                child?.uid != firebaseUser?.uid
+                                child.uid != firebaseUser?.uid
                             }
                             .toList()
                             .subscribe { t1, _ ->
-                                registerStatusListener()
                                 view.insertUser(t1)
                                 view.disableProgressbar()
                             }
                 }
+                isLoadInitial = true
             }
         })
     }

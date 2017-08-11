@@ -9,6 +9,7 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.example.ominext.chatfirebase.R
 import com.example.ominext.chatfirebase.model.Message
 import com.example.ominext.chatfirebase.model.StatusMessage
@@ -74,8 +75,9 @@ class ItemChatRightViewHolder(itemView: View, private val adapterListener: ItemC
                 Glide.with(itemView.context)
                         .load(message.message)
                         .thumbnail(0.5f)
-                        .placeholder(R.drawable.dummy_image)
-                        .error(R.drawable.dummy_image)
+                        .apply(RequestOptions()
+                                .placeholder(R.drawable.dummy_image)
+                                .error(R.drawable.dummy_image))
                         .into(imvImage)
             }
         }

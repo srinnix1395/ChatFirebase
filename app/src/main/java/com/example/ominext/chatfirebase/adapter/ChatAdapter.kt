@@ -130,14 +130,14 @@ class ChatAdapter(val listMessage: ArrayList<Any?>,
         notifyItemRangeInserted(position, messages.size)
     }
 
-    fun updateMessage(oldMessage: Message, newIdMessage: String?, newCreatedAt: Long) {
+    fun updateMessage(idMessage: String?, createdAt: Long?) {
         val size = listMessage.size
+
         for (i in size - 1 downTo 0) {
-            if (listMessage[i] is Message && (listMessage[i] as Message).id == oldMessage.id) {
-                (listMessage[i] as Message).id = newIdMessage
-                (listMessage[i] as Message).createdAt = newCreatedAt
+            if (listMessage[i] is Message && (listMessage[i] as Message).id == idMessage) {
+                (listMessage[i] as Message).createdAt = createdAt!!
                 (listMessage[i] as Message).status = StatusMessage.COMPLETE.name
-                notifyItemChanged(i, StatusMessagePayload(newIdMessage))
+                notifyItemChanged(i, StatusMessagePayload(idMessage))
                 return
             }
         }

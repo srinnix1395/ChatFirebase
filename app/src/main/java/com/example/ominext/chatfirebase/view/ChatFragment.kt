@@ -157,12 +157,8 @@ class ChatFragment : Fragment() {
         }
     }
 
-    fun scrollToBottom() {
-        rvChat.scrollToPosition(mPresenter.listMessage.size - 1)
-    }
-
-    fun updateStatusMessage(oldMessage: Message, newIdMessage: String?, newCreatedAt: Long) {
-        mAdapter.updateMessage(oldMessage, newIdMessage, newCreatedAt)
+    fun updateStatusMessage(idMessage: String?, createdAt: Long?) {
+        mAdapter.updateMessage(idMessage, createdAt)
         rvChat.scrollToPosition(mPresenter.listMessage.size - 1)
     }
 }
