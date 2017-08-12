@@ -14,7 +14,6 @@ import com.example.ominext.chatfirebase.model.Message
 import com.example.ominext.chatfirebase.model.StatusMessage
 import com.example.ominext.chatfirebase.model.User
 import com.google.firebase.auth.FirebaseUser
-import java.util.*
 
 /**
  * Created by Ominext on 8/2/2017.
@@ -125,7 +124,7 @@ class ChatAdapter(val listMessage: ArrayList<Any?>,
         notifyItemInserted(index)
     }
 
-    fun addAll(messages: ArrayList<Message>, position: Int) {
+    fun addAll(messages: ArrayList<Any>, position: Int) {
         listMessage.addAll(position, messages)
         notifyItemRangeInserted(position, messages.size)
     }

@@ -1,8 +1,8 @@
 package com.example.ominext.chatfirebase
 
 import android.app.Application
-import com.example.ominext.chatfirebase.model.Status
 import com.example.ominext.chatfirebase.constant.ChatConstant
+import com.example.ominext.chatfirebase.model.Status
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
@@ -32,8 +32,11 @@ class ChatApplication : Application() {
         db = FirebaseDatabase.getInstance().reference
 
         if (firebaseUser != null) {
-            db.child(ChatConstant.USERS).child(firebaseUser?.uid).child(ChatConstant.STATUS).setValue(Status.ONLINE.name)
-            db.child(ChatConstant.USERS).child(firebaseUser?.uid).child(ChatConstant.LAST_ONLINE).setValue(null)
+            val data = HashMap<String, Any?>()
+            data.put(ChatConstant.STATUS, Status.ONLINE.name)
+            data.put(ChatConstant.LAST_ONLINE, null)
+            db.child(ChatConstant.USERS).child(firebaseUser?.uid).updateChildren(data)
+
             db.child(ChatConstant.USERS).child(firebaseUser?.uid).child(ChatConstant.STATUS).onDisconnect().setValue(Status.OFFLINE.name)
             db.child(ChatConstant.USERS).child(firebaseUser?.uid).child(ChatConstant.LAST_ONLINE).onDisconnect().setValue(ServerValue.TIMESTAMP)
 

@@ -6,7 +6,7 @@ import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
 import com.example.ominext.chatfirebase.R
-import com.example.ominext.chatfirebase.util.Utils
+import com.example.ominext.chatfirebase.widget.setTimeAgo
 
 /**
  * Created by Ominext on 8/1/2017.
@@ -22,6 +22,6 @@ class ItemChatTimeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
     }
 
     fun bindData(time: Long) {
-        tvTime.text = Utils.getTimeAgoMessage(time)
+        tvTime.setTimeAgo(time)
     }
 }

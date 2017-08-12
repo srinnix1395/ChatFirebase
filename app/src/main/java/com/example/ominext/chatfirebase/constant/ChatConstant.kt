@@ -30,7 +30,7 @@ object ChatConstant {
     val LAST = 3
 
     val ITEM_MESSAGE_PER_PAGE = 30
-    val TIME_DISTANCE: Long = 300000
+    val TIME_DISTANCE: Long = 300_000
 
     val NOTIFICATION_ID = 125812
 

@@ -43,21 +43,6 @@ object Utils {
         }
     }
 
-    fun getTimeAgoMessage(time: Long): String {
-        val calendar = Calendar.getInstance()
-        val currentYear = calendar.get(Calendar.YEAR)
-        val currentDay = calendar.get(Calendar.DAY_OF_YEAR)
-
-        calendar.timeInMillis = time
-        if (calendar.get(Calendar.YEAR) == currentYear && calendar.get(Calendar.DAY_OF_YEAR) == currentDay) {
-            val dateFormat = SimpleDateFormat("kk:mm", Locale.getDefault())
-            return dateFormat.format(Date(time))
-        } else {
-            val dateFormat = SimpleDateFormat("EEE - kk:mm", Locale.getDefault())
-            return dateFormat.format(Date(time)).replace("-", "LÚC")
-        }
-    }
-
     fun isNetworkAvailable(context: Context): Boolean {
         val mConnectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 

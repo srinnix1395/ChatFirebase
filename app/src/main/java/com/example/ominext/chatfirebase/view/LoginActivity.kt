@@ -111,6 +111,12 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         ChatApplication.app?.updateUser()
         userFirebase = ChatApplication.app?.firebaseUser
         val dbUser = ChatApplication.app?.db?.child(ChatConstant.USERS)?.ref
+
+        val data = HashMap<String, Any?>()
+        data.put(ChatConstant.STATUS, Status.ONLINE.name)
+        data.put(ChatConstant.LAST_ONLINE, null)
+        dbUser?.child(userFirebase?.uid)?.updateChildren(data)
+
         dbUser?.child(userFirebase?.uid)?.child(ChatConstant.STATUS)?.onDisconnect()?.setValue(Status.OFFLINE.name)
         dbUser?.child(userFirebase?.uid)?.child(ChatConstant.LAST_ONLINE)?.onDisconnect()?.setValue(ServerValue.TIMESTAMP)
     }
@@ -131,7 +137,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
     }
 
     @OnClick(R.id.layout_loginFB)
-    fun onClickLoginFacebook(){
+    fun onClickLoginFacebook() {
         progressBar.isEnabled = true
         progressBar.visibility = View.VISIBLE
 

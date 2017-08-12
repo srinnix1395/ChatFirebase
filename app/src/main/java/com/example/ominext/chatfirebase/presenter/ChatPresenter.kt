@@ -10,8 +10,12 @@ import com.example.ominext.chatfirebase.util.DebugLog
 import com.example.ominext.chatfirebase.util.Utils
 import com.example.ominext.chatfirebase.util.toast
 import com.example.ominext.chatfirebase.view.ChatFragment
+import com.example.ominext.chatfirebase.widget.isNotExistIn
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 /**
@@ -28,10 +32,14 @@ class ChatPresenter : LifecycleObserver {
 
     lateinit var conversationKey: String
     var pivotMessageId: String? = null
-    var page: Int = 1
+    var page: Int = FIRST_PAGE
     var isLoading: Boolean = false
     var hasNext: Boolean = true
-    var isLoadInitial: Boolean = false
+    var isLoadedInitial: Boolean = false
+
+    companion object {
+        @JvmField val FIRST_PAGE = 1
+    }
 
     fun addView(chatFragment: ChatFragment) {
         view = chatFragment
@@ -47,19 +55,66 @@ class ChatPresenter : LifecycleObserver {
         }
 
         conversationRef = ChatApplication.app?.db?.child(ChatConstant.CONVERSATIONS)?.child(conversationKey)
-        addListener()
+        addUserListener()
+        addMessageListener()
+    }
+
+    private fun addUserListener() {
+
+    }
+
+    private fun addMessageListener() {
+        conversationRef?.addChildEventListener(object : ChildEventListener {
+            override fun onCancelled(p0: DatabaseError?) {
+
+            }
+
+            override fun onChildMoved(p0: DataSnapshot?, p1: String?) {
+
+            }
+
+            override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
+                if (!isLoadedInitial) {
+                    return
+                }
+                println("Child changed: ${p0?.value}")
+
+                val message: Message? = p0?.getValue(Message::class.java)
+                if (listMessage.isNotExistIn(message)) {
+                    view?.insertMessage(message)
+                } else {
+                    view?.updateStatusMessage(message?.id, message?.createdAt)
+                }
+            }
+
+            override fun onChildAdded(p0: DataSnapshot?, p1: String?) {
+                if (!isLoadedInitial) {
+                    return
+                }
+
+                println("Child added: ${p0?.value}")
+                val message: Message? = p0?.getValue(Message::class.java)
+                if (listMessage.isNotExistIn(message)) {
+                    view?.insertMessage(message)
+                }
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot?) {
+
+            }
+        })
     }
 
     fun onLoadMessage() {
         if (isLoading || !hasNext) return
 
-        if (page > 1) {
+        isLoading = true
+
+        if (page > FIRST_PAGE) {
             view?.addLoadingType()
         } else {
             view?.showProgressBar(true)
         }
-
-        isLoading = true
 
         val query: Query? = conversationRef?.orderByKey()
         pivotMessageId?.let {
@@ -73,75 +128,74 @@ class ChatPresenter : LifecycleObserver {
                 isLoading = false
             }
 
-            override fun onDataChange(p0: DataSnapshot?) {
-                DebugLog.i("Data changed: ${p0?.childrenCount ?: 0}")
-                val messages = arrayListOf<Message>()
-                p0?.children?.forEach { snapshot ->
-                    val message = snapshot.getValue(Message::class.java)
-                    messages.add(message!!)
-                }
+            override fun onDataChange(p0: DataSnapshot) {
+                val messages = arrayListOf<Any>()
+                var addedItemsCount = 0
+                val childrenCount = p0.childrenCount.toInt()
 
-                val count = messages.size
-
-                if (count > 0) {
-                    pivotMessageId = messages[0].id
-
-                    val isLoadFirst = pivotMessageId != null
-                    if (!isLoadFirst) {
-                        messages.removeAt(0).id
-                    }
-                }
-
-                if (page == 1) {
-                    view?.showProgressBar(false)
-                    view?.addMessage(messages, 0, page)
-                } else {
-                    if (listMessage.isNotEmpty() && listMessage.last() is LoadingItem) {
-                        view?.removeLoadingItem(0)
-                    }
-
-                    view?.addMessage(messages, 0, page)
-                }
-
-                hasNext = count == ChatConstant.ITEM_MESSAGE_PER_PAGE
-                page++
-                isLoading = false
-                isLoadInitial = true
-            }
-        })
-    }
-
-    private fun addListener() {
-        conversationRef?.addChildEventListener(object : ChildEventListener {
-            override fun onCancelled(p0: DatabaseError?) {
-
-            }
-
-            override fun onChildMoved(p0: DataSnapshot?, p1: String?) {
-
-            }
-
-            override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
-                DebugLog.i("Child changed: ${p0?.value}")
-            }
-
-            override fun onChildAdded(p0: DataSnapshot?, p1: String?) {
-                if (!isLoadInitial) {
+                if (page > FIRST_PAGE && childrenCount == 1) {
+                    hasNext = false
+                    isLoading = false
+                    isLoadedInitial = true
                     return
                 }
-//                DebugLog.i("Child added: ${p0?.value}")
-//                val message: Message? = p0?.getValue(Message::class.java)
-//                if (listMessage.isNotEmpty()) {
-//                    val lastObject = listMessage.last()
-//                    if (lastObject is Message && lastObject) {
-//
-//                    }
-//                }
-//                view?.insertMessage(message)
-            }
 
-            override fun onChildRemoved(p0: DataSnapshot?) {
+                Observable.fromIterable(p0.children)
+                        .map { child ->
+                            println(Thread.currentThread().name)
 
+                            val value = child.getValue(Message::class.java)
+                            messages.add(value!!)
+                            addedItemsCount++
+
+                            return@map value
+                        }
+                        .scan(Message(), { t1, t2 ->
+                            val isLastItem = (addedItemsCount == childrenCount)
+                            if (isLastItem) {
+                                return@scan t2
+                            }
+
+                            if (t2.createdAt - t1.createdAt >= ChatConstant.TIME_DISTANCE) {
+                                messages.add(messages.size - 1, t2.createdAt)
+                            }
+                            return@scan t2
+                        })
+                        .subscribeOn(Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doFinally {
+                            hasNext = addedItemsCount == ChatConstant.ITEM_MESSAGE_PER_PAGE
+                            page++
+                            isLoading = false
+                            isLoadedInitial = true
+                        }
+                        .subscribe({
+                            //onNext: do nothing
+                        }, {
+                            //onError:
+
+                        }, {
+                            //onComplete
+                            pivotMessageId = (messages[1] as Message).id
+
+                            if (page > FIRST_PAGE) {
+                                messages.removeAt(messages.size - 1)
+                            }
+
+                            if (page == FIRST_PAGE) {
+                                view?.showProgressBar(false)
+                            } else if (listMessage.isNotEmpty() && listMessage.last() is LoadingItem) {
+                                view?.removeLoadingItem(0)
+                            }
+
+                            if (listMessage.isNotEmpty() && listMessage.first() is Long) {
+                                if (listMessage.first() as Long - (messages.last() as Message).createdAt < ChatConstant.TIME_DISTANCE) {
+                                    view?.removeItem(0)
+                                }
+                            }
+
+                            view?.addMessage(messages, 0, page)
+                        })
             }
         })
     }
@@ -170,14 +224,5 @@ class ChatPresenter : LifecycleObserver {
         view?.insertMessage(message)
 
         conversationRef?.child(message.id)?.setValue(message)
-        conversationRef?.child(message.id)?.child(ChatConstant.CREATED_AT)?.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError?) {
-
-            }
-
-            override fun onDataChange(p0: DataSnapshot?) {
-                view?.updateStatusMessage(message.id, p0?.getValue(Long::class.java))
-            }
-        })
     }
 }

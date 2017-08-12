@@ -15,6 +15,7 @@ import com.example.ominext.chatfirebase.model.Message
 import com.example.ominext.chatfirebase.model.StatusMessage
 import com.example.ominext.chatfirebase.model.TypeMessage
 import com.example.ominext.chatfirebase.util.Utils
+import com.example.ominext.chatfirebase.widget.setTimeAgo
 
 /**
  * Created by Ominext on 8/1/2017.
@@ -47,7 +48,7 @@ class ItemChatRightViewHolder(itemView: View, private val adapterListener: ItemC
     }
 
     fun bindData(message: Message) {
-        tvTime.text = Utils.getTimeAgoMessage(message.createdAt)
+        tvTime.setTimeAgo(message.createdAt)
 
         when (message.messageType) {
             TypeMessage.TEXT.name -> {

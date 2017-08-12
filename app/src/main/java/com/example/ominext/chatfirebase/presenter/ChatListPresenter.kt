@@ -50,6 +50,7 @@ class ChatListPresenter : LifecycleObserver {
             }
 
             override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
+                println("changed")
                 if (isLoadInitial) {
                     val user = p0?.getValue(User::class.java)
                     println(user?.uid)
@@ -73,6 +74,7 @@ class ChatListPresenter : LifecycleObserver {
             toast("No internet connection")
             return
         }
+
         val intent = Intent(view.context, DetailChatActivity::class.java)
         val bundle = Bundle()
         bundle.putParcelable(ChatConstant.USER, listUser[position])

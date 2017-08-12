@@ -24,7 +24,6 @@ import com.example.ominext.chatfirebase.model.Message
 import com.example.ominext.chatfirebase.model.Status
 import com.example.ominext.chatfirebase.presenter.ChatPresenter
 import com.example.ominext.chatfirebase.util.Utils
-import java.util.*
 
 /**
  * Created by Ominext on 8/1/2017.
@@ -72,11 +71,7 @@ class ChatFragment : Fragment() {
         }
 
         tvName.text = mPresenter.userFriend?.name ?: ""
-        tvStatus.text = if (mPresenter.userFriend?.status == Status.ONLINE.name) {
-            "Đang hoạt động"
-        } else {
-            Utils.getTimeAgoUser(context, mPresenter.userFriend?.lastOnline!!)
-        }
+        setStatus()
 
         val layoutManager: LinearLayoutManager = LinearLayoutManager(context)
         rvChat.layoutManager = layoutManager
@@ -91,6 +86,11 @@ class ChatFragment : Fragment() {
                 }
             }
         })
+        rvChat.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+            if (bottom < oldBottom && !mPresenter.listMessage.isEmpty()) {
+                rvChat.postDelayed({ rvChat.smoothScrollToPosition(mPresenter.listMessage.size - 1) }, 100)
+            }
+        }
         mAdapter = ChatAdapter(mPresenter.listMessage, mPresenter.currentUser, mPresenter.userFriend, {
             mPresenter.onLoadMessage()
         })
@@ -115,6 +115,14 @@ class ChatFragment : Fragment() {
         })
 
         mPresenter.onLoadMessage()
+    }
+
+    private fun setStatus() {
+        tvStatus.text = if (mPresenter.userFriend?.status == Status.ONLINE.name) {
+            "Đang hoạt động"
+        } else {
+            Utils.getTimeAgoUser(context, mPresenter.userFriend?.lastOnline!!)
+        }
     }
 
     @OnClick(R.id.imageview_send)
@@ -150,7 +158,7 @@ class ChatFragment : Fragment() {
         mAdapter.removeItem(position)
     }
 
-    fun addMessage(messages: ArrayList<Message>, position: Int, page: Int) {
+    fun addMessage(messages: ArrayList<Any>, position: Int, page: Int) {
         mAdapter.addAll(messages, position)
         if (page == 1 && mPresenter.listMessage.isNotEmpty()) {
             rvChat.scrollToPosition(mPresenter.listMessage.size - 1)
@@ -160,5 +168,9 @@ class ChatFragment : Fragment() {
     fun updateStatusMessage(idMessage: String?, createdAt: Long?) {
         mAdapter.updateMessage(idMessage, createdAt)
         rvChat.scrollToPosition(mPresenter.listMessage.size - 1)
+    }
+
+    fun removeItem(position: Int) {
+        mAdapter.removeItem(position)
     }
 }

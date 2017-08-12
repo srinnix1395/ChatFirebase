@@ -1,11 +1,13 @@
 package com.example.ominext.chatfirebase.view
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import butterknife.BindView
 import butterknife.ButterKnife
+import com.example.ominext.chatfirebase.ChatApplication
 import com.example.ominext.chatfirebase.R
 
 /**
@@ -32,6 +34,10 @@ class ChatListActivity : AppCompatActivity() {
     }
 
     private fun signOut() {
-        //todo sign out
+        ChatApplication.app?.firebaseAuth?.signOut()
+        finish()
+
+        val intent: Intent = Intent(this, LoginActivity::class.java)
+        startActivity(intent)
     }
 }
