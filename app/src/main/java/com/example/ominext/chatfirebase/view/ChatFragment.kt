@@ -19,9 +19,11 @@ import butterknife.ButterKnife
 import butterknife.OnClick
 import com.example.ominext.chatfirebase.R
 import com.example.ominext.chatfirebase.adapter.ChatAdapter
+import com.example.ominext.chatfirebase.constant.ChatConstant
 import com.example.ominext.chatfirebase.model.LoadingItem
 import com.example.ominext.chatfirebase.model.Message
 import com.example.ominext.chatfirebase.model.Status
+import com.example.ominext.chatfirebase.model.TypeMessage
 import com.example.ominext.chatfirebase.presenter.ChatPresenter
 import com.example.ominext.chatfirebase.util.Utils
 
@@ -36,7 +38,7 @@ class ChatFragment : Fragment() {
     @BindView(R.id.edittext_message)
     lateinit var etMessage: EditText
 
-    @BindView(R.id.imageview_send)
+    @BindView(R.id.imagebutton_send)
     lateinit var imvSend: ImageView
 
     @BindView(R.id.textview_name)
@@ -71,7 +73,7 @@ class ChatFragment : Fragment() {
         }
 
         tvName.text = mPresenter.userFriend?.name ?: ""
-        setStatus()
+        setStatus(mPresenter.userFriend?.status)
 
         val layoutManager: LinearLayoutManager = LinearLayoutManager(context)
         rvChat.layoutManager = layoutManager
@@ -81,7 +83,7 @@ class ChatFragment : Fragment() {
 
                 if (dy >= 0) return
 
-                if (layoutManager.findFirstVisibleItemPosition() - 1 <= 0) {
+                if (layoutManager.findFirstCompletelyVisibleItemPosition() - 1 <= 0) {
                     mPresenter.onLoadMessage()
                 }
             }
@@ -97,8 +99,8 @@ class ChatFragment : Fragment() {
         rvChat.adapter = mAdapter
 
         etMessage.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(p0: Editable?) {
-
+            override fun afterTextChanged(p0: Editable) {
+                mPresenter.onUserTyping(p0.toString())
             }
 
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -117,22 +119,27 @@ class ChatFragment : Fragment() {
         mPresenter.onLoadMessage()
     }
 
-    private fun setStatus() {
-        tvStatus.text = if (mPresenter.userFriend?.status == Status.ONLINE.name) {
+    fun setStatus(status: String?) {
+        tvStatus.text = if (status == Status.ONLINE.name) {
             "Đang hoạt động"
         } else {
             Utils.getTimeAgoUser(context, mPresenter.userFriend?.lastOnline!!)
         }
     }
 
-    @OnClick(R.id.imageview_send)
+    @OnClick(R.id.imagebutton_send)
     fun onClickSend() {
         mPresenter.sendMessage(context, etMessage.text.toString(), imvSend.drawable.level)
     }
 
-    fun insertMessage(message: Message?) {
-        mAdapter.add(message = message)
-        etMessage.text.clear()
+    @OnClick(R.id.imagebutton_image)
+    fun onClickSelectImage() {
+        val bundle = Bundle()
+        bundle.putParcelableArrayList(ChatConstant.KEY_MEDIA, null)
+        bundle.putInt(ChatConstant.KEY_MEDIA_TYPE, ChatConstant.TYPE_IMAGE)
+        bundle.putInt(ChatConstant.KEY_LIMIT, 1)
+
+        //todo show image picker fragment
     }
 
     fun showProgressBar(b: Boolean) {
@@ -144,13 +151,10 @@ class ChatFragment : Fragment() {
         }
     }
 
-    fun addLoadingType() {
+    fun addLoadingItem() {
         val size = mPresenter.listMessage.size
         if (size > 0 && mPresenter.listMessage.first() !is LoadingItem) {
             mPresenter.listMessage.add(0, LoadingItem())
-            rvChat.post {
-                mAdapter.notifyItemInserted(0)
-            }
         }
     }
 
@@ -158,19 +162,43 @@ class ChatFragment : Fragment() {
         mAdapter.removeItem(position)
     }
 
-    fun addMessage(messages: ArrayList<Any>, position: Int, page: Int) {
+    fun addAll(messages: ArrayList<Any>, position: Int, page: Int) {
         mAdapter.addAll(messages, position)
-        if (page == 1 && mPresenter.listMessage.isNotEmpty()) {
-            rvChat.scrollToPosition(mPresenter.listMessage.size - 1)
+        if (page == 1) {
+            scrollToBottom()
         }
+    }
+
+    fun add(index: Int, message: Message?) {
+        mAdapter.add(index, message)
+        etMessage.text.clear()
+        scrollToBottom()
     }
 
     fun updateStatusMessage(idMessage: String?, createdAt: Long?) {
         mAdapter.updateMessage(idMessage, createdAt)
-        rvChat.scrollToPosition(mPresenter.listMessage.size - 1)
+        scrollToBottom()
     }
 
     fun removeItem(position: Int) {
         mAdapter.removeItem(position)
+    }
+
+    fun showTypingMessage(isFriendTyping: Boolean) {
+        if (isFriendTyping) {
+            val messageTyping = Message()
+            messageTyping.messageType = TypeMessage.TYPING.name
+
+            mAdapter.add(message = messageTyping)
+            scrollToBottom()
+        } else {
+            mAdapter.removeItem()
+        }
+    }
+
+    private fun scrollToBottom() {
+        if (mPresenter.listMessage.isNotEmpty()) {
+            rvChat.scrollToPosition(mPresenter.listMessage.size - 1)
+        }
     }
 }

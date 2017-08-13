@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.example.ominext.chatfirebase.widget.SquareItemLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/imageview_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"/>
+
+    <TextView
+        android:id="@+id/textview_gif"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_margin="@dimen/margin_vertical_low"
+        android:background="@drawable/ic_gif_1"
+        android:fontFamily="sans-serif-light"
+        android:gravity="center"
+        android:paddingBottom="4dp"
+        android:paddingEnd="8dp"
+        android:paddingStart="8dp"
+        android:paddingTop="4dp"
+        android:text="GIF"
+        android:textColor="@color/colorWhite"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/textview_video"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_margin="@dimen/margin_vertical_low"
+        android:background="@drawable/ic_gif_1"
+        android:drawablePadding="@dimen/padding_drawable"
+        android:drawableStart="@drawable/ic_camera_20dp"
+        android:gravity="center"
+        android:paddingBottom="4dp"
+        android:paddingEnd="8dp"
+        android:paddingStart="8dp"
+        android:paddingTop="4dp"
+        android:textColor="@color/colorWhite"
+        tools:text="8:52"/>
+
+    <ImageView
+        android:id="@+id/imageview_alpha"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:src="@drawable/background_item_image_picker"/>
+
+
+</com.example.ominext.chatfirebase.widget.SquareItemLayout>

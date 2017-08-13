@@ -3,10 +3,10 @@ package com.example.ominext.chatfirebase.util
 import android.content.Context
 import android.net.ConnectivityManager
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.Toast
 import com.example.ominext.chatfirebase.ChatApplication
 import com.example.ominext.chatfirebase.R
-import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -22,6 +22,16 @@ object Utils {
     val WEEK_MILLIS = (24 * 7 * HOUR_MILLIS).toLong()
     val MONTH_MILLIS = DAY_MILLIS * 30
     val YEAR_MILLIS = 365 * DAY_MILLIS
+
+    fun dpToPixel(context: Context, dp: Float): Int {
+        val metrics = context.resources.displayMetrics
+        return (dp * metrics.density + 0.5).toInt()
+    }
+
+    fun pixelsToDp(context: Context, px: Float): Int {
+        val metrics = context.resources.displayMetrics
+        return (px / metrics.density + 0.5).toInt()
+    }
 
     fun hideView(view: View?) {
         if (view == null) {
@@ -84,6 +94,47 @@ object Utils {
         }
 
         return String.format(Locale.getDefault(), "%d %s", diff / YEAR_MILLIS, context.getString(R.string.week_ago))
+    }
+
+    fun getDurationVideo(duration: Int): String {
+        val totalSecond = duration / 1000
+        var minute = (totalSecond / 60).toString()
+        if (minute.length == 1) {
+            minute = "0" + minute
+        }
+
+        var seconds = (totalSecond % 60).toString()
+        if (seconds.length == 1) {
+            seconds = "0" + seconds
+        }
+        return minute + ":" + seconds
+
+    }
+
+    fun showProgressBar(progressBar: ProgressBar?) {
+        if (progressBar == null) {
+            return
+        }
+
+        if (progressBar.visibility == View.VISIBLE) {
+            return
+        }
+
+        progressBar.isEnabled = true
+        progressBar.visibility = View.VISIBLE
+    }
+
+    fun hideProgressBar(progressBar: ProgressBar?) {
+        if (progressBar == null) {
+            return
+        }
+
+        if (progressBar.visibility != View.VISIBLE) {
+            return
+        }
+
+        progressBar.visibility = View.GONE
+        progressBar.isEnabled = false
     }
 }
 

@@ -23,7 +23,7 @@ import com.google.firebase.auth.FirebaseUser
 class ChatAdapter(val listMessage: ArrayList<Any?>,
                   val currentUser: FirebaseUser?,
                   val friendUser: User?,
-                  val mRetryListener: (() -> Unit)? = null) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), ItemChatLeftViewHolder.AdapterListener {
+                  val mRetryListener: (() -> Unit)? = null) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), AdapterListener {
 
     companion object {
         @JvmField val ITEM_LOADING = 0
@@ -32,17 +32,19 @@ class ChatAdapter(val listMessage: ArrayList<Any?>,
         @JvmField val ITEM_TIME = 3
     }
 
+    var positionItemShowTime: Int = -1
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder? {
         when (viewType) {
             ITEM_LEFT -> {
                 val view = LayoutInflater.from(parent.context)
                         .inflate(R.layout.item_chat_left, parent, false)
-                return ItemChatLeftViewHolder(view, friendUser?.photo, this)
+                return ItemChatLeftViewHolder(view, friendUser?.photo, positionItemShowTime, this)
             }
             ITEM_RIGHT -> {
                 val view = LayoutInflater.from(parent.context)
                         .inflate(R.layout.item_chat_right, parent, false)
-                return ItemChatRightViewHolder(view, this)
+                return ItemChatRightViewHolder(view, positionItemShowTime, this)
             }
             ITEM_TIME -> {
                 val view = LayoutInflater.from(parent.context)
@@ -142,8 +144,12 @@ class ChatAdapter(val listMessage: ArrayList<Any?>,
         }
     }
 
-    fun removeItem(position: Int) {
+    fun removeItem(position: Int = listMessage.size - 1) {
         listMessage.removeAt(position)
         notifyItemRemoved(position)
     }
+}
+
+interface AdapterListener {
+    fun isValidToShowTime(position: Int): Boolean
 }

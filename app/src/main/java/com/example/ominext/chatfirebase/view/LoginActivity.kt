@@ -110,15 +110,17 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
     private fun addUserToDatabase() {
         ChatApplication.app?.updateUser()
         userFirebase = ChatApplication.app?.firebaseUser
-        val dbUser = ChatApplication.app?.db?.child(ChatConstant.USERS)?.ref
+        val userRef = ChatApplication.app?.db?.child(ChatConstant.USERS)?.ref
 
         val data = HashMap<String, Any?>()
         data.put(ChatConstant.STATUS, Status.ONLINE.name)
         data.put(ChatConstant.LAST_ONLINE, null)
-        dbUser?.child(userFirebase?.uid)?.updateChildren(data)
+        userRef?.child(userFirebase?.uid)?.updateChildren(data)
 
-        dbUser?.child(userFirebase?.uid)?.child(ChatConstant.STATUS)?.onDisconnect()?.setValue(Status.OFFLINE.name)
-        dbUser?.child(userFirebase?.uid)?.child(ChatConstant.LAST_ONLINE)?.onDisconnect()?.setValue(ServerValue.TIMESTAMP)
+        val mapOffline = HashMap<String, Any?>()
+        mapOffline.put(ChatConstant.STATUS, Status.OFFLINE.name)
+        mapOffline.put(ChatConstant.LAST_ONLINE, ServerValue.TIMESTAMP)
+        userRef?.onDisconnect()?.updateChildren(mapOffline)
     }
 
     private fun moveToMainFragment() {

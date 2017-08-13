@@ -28,8 +28,6 @@ class ChatListFragment : Fragment(), LifecycleRegistryOwner {
     @BindView(R.id.progressbar_loading)
     lateinit var pbLoading: ProgressBar
 
-
-
     lateinit var mPresenter: ChatListPresenter
     lateinit var mAdapter: UsersAdapter
     val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)

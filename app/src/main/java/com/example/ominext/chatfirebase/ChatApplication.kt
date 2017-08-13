@@ -37,8 +37,10 @@ class ChatApplication : Application() {
             data.put(ChatConstant.LAST_ONLINE, null)
             db.child(ChatConstant.USERS).child(firebaseUser?.uid).updateChildren(data)
 
-            db.child(ChatConstant.USERS).child(firebaseUser?.uid).child(ChatConstant.STATUS).onDisconnect().setValue(Status.OFFLINE.name)
-            db.child(ChatConstant.USERS).child(firebaseUser?.uid).child(ChatConstant.LAST_ONLINE).onDisconnect().setValue(ServerValue.TIMESTAMP)
+            val mapOffline = HashMap<String, Any?>()
+            mapOffline.put(ChatConstant.STATUS, Status.OFFLINE.name)
+            mapOffline.put(ChatConstant.LAST_ONLINE, ServerValue.TIMESTAMP)
+            db.child(ChatConstant.USERS).child(firebaseUser?.uid).onDisconnect().updateChildren(mapOffline)
 
             val connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected")
             connectedRef.addValueEventListener(object : ValueEventListener {

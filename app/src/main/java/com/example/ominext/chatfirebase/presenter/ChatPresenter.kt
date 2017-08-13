@@ -16,7 +16,9 @@ import com.google.firebase.database.*
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by Ominext on 8/2/2017.
@@ -36,6 +38,15 @@ class ChatPresenter : LifecycleObserver {
     var isLoading: Boolean = false
     var hasNext: Boolean = true
     var isLoadedInitial: Boolean = false
+    val subjectTyping: PublishSubject<Boolean> = PublishSubject.create()
+    var isUserTyping: Boolean = false
+        set(value) {
+            field = value
+            conversationRef
+                    ?.child(ChatConstant.TYPING_MESSAGE)
+                    ?.child(currentUser?.uid)
+                    ?.setValue(value)
+        }
 
     companion object {
         @JvmField val FIRST_PAGE = 1
@@ -44,6 +55,13 @@ class ChatPresenter : LifecycleObserver {
     fun addView(chatFragment: ChatFragment) {
         view = chatFragment
         currentUser = ChatApplication.app?.firebaseUser
+
+        subjectTyping
+                .debounce(5, TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    isUserTyping = false
+                }
     }
 
     fun getData(arguments: Bundle) {
@@ -55,16 +73,57 @@ class ChatPresenter : LifecycleObserver {
         }
 
         conversationRef = ChatApplication.app?.db?.child(ChatConstant.CONVERSATIONS)?.child(conversationKey)
+
         addUserListener()
         addMessageListener()
+        addTypingListener()
     }
 
     private fun addUserListener() {
+        ChatApplication.app?.db?.child(ChatConstant.USERS)?.child(userFriend?.uid)?.addValueEventListener(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError?) {
+                DebugLog.e(p0?.message!!)
+            }
 
+            override fun onDataChange(p0: DataSnapshot?) {
+                val user = p0?.getValue(User::class.java)
+                user?.let {
+                    view?.setStatus(user.status)
+                }
+            }
+        })
+    }
+
+    private fun addTypingListener() {
+        conversationRef?.child(ChatConstant.TYPING_MESSAGE)?.child(userFriend?.uid)?.addValueEventListener(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError?) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot?) {
+                val isFriendTyping = p0?.getValue(Boolean::class.java)
+
+                isFriendTyping?.let {
+                    val isUserTypingChanged = listMessage.isNotEmpty()
+                            && listMessage.last() is Message
+                            && (listMessage.last() as Message).isTypingMessage != isFriendTyping
+
+                    if (isUserTypingChanged) {
+                        view?.showTypingMessage(isFriendTyping)
+                    }
+                }
+            }
+        })
+
+        conversationRef
+                ?.child(ChatConstant.TYPING_MESSAGE)
+                ?.child(userFriend?.uid)
+                ?.onDisconnect()
+                ?.setValue(false)
     }
 
     private fun addMessageListener() {
-        conversationRef?.addChildEventListener(object : ChildEventListener {
+        conversationRef?.child(ChatConstant.MESSAGES)?.addChildEventListener(object : ChildEventListener {
             override fun onCancelled(p0: DatabaseError?) {
 
             }
@@ -81,7 +140,7 @@ class ChatPresenter : LifecycleObserver {
 
                 val message: Message? = p0?.getValue(Message::class.java)
                 if (listMessage.isNotExistIn(message)) {
-                    view?.insertMessage(message)
+                    addMessage(message)
                 } else {
                     view?.updateStatusMessage(message?.id, message?.createdAt)
                 }
@@ -95,7 +154,7 @@ class ChatPresenter : LifecycleObserver {
                 println("Child added: ${p0?.value}")
                 val message: Message? = p0?.getValue(Message::class.java)
                 if (listMessage.isNotExistIn(message)) {
-                    view?.insertMessage(message)
+                    addMessage(message)
                 }
             }
 
@@ -105,20 +164,33 @@ class ChatPresenter : LifecycleObserver {
         })
     }
 
+    fun onUserTyping(text: String) {
+        if (text.isEmpty() && isUserTyping) {
+            isUserTyping = false
+            return
+        }
+
+        if (!isUserTyping) {
+            isUserTyping = true
+        }
+        subjectTyping.onNext(false)
+    }
+
     fun onLoadMessage() {
         if (isLoading || !hasNext) return
 
         isLoading = true
 
         if (page > FIRST_PAGE) {
-            view?.addLoadingType()
+            view?.addLoadingItem()
         } else {
             view?.showProgressBar(true)
         }
 
-        val query: Query? = conversationRef?.orderByKey()
+        var query: Query? = conversationRef?.child(ChatConstant.MESSAGES)?.orderByKey()
+
         pivotMessageId?.let {
-            query?.endAt(pivotMessageId)
+            query = query?.endAt(pivotMessageId)
         }
 
         query?.limitToLast(ChatConstant.ITEM_MESSAGE_PER_PAGE)?.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -150,16 +222,16 @@ class ChatPresenter : LifecycleObserver {
 
                             return@map value
                         }
-                        .scan(Message(), { t1, t2 ->
+                        .scan(Message(), { prevItem, currentItem ->
                             val isLastItem = (addedItemsCount == childrenCount)
                             if (isLastItem) {
-                                return@scan t2
+                                return@scan currentItem
                             }
 
-                            if (t2.createdAt - t1.createdAt >= ChatConstant.TIME_DISTANCE) {
-                                messages.add(messages.size - 1, t2.createdAt)
+                            if (currentItem.createdAt - prevItem.createdAt >= ChatConstant.TIME_DISTANCE) {
+                                messages.add(messages.size - 1, currentItem.createdAt)
                             }
-                            return@scan t2
+                            return@scan currentItem
                         })
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -176,25 +248,32 @@ class ChatPresenter : LifecycleObserver {
 
                         }, {
                             //onComplete
-                            pivotMessageId = (messages[1] as Message).id
+                            if (messages.size >= 2) {
+                                pivotMessageId = (messages[1] as Message).id
 
-                            if (page > FIRST_PAGE) {
-                                messages.removeAt(messages.size - 1)
+                                if (page > FIRST_PAGE) {
+                                    messages.removeAt(messages.size - 1)
+                                }
                             }
 
                             if (page == FIRST_PAGE) {
                                 view?.showProgressBar(false)
-                            } else if (listMessage.isNotEmpty() && listMessage.last() is LoadingItem) {
-                                view?.removeLoadingItem(0)
+                            } else {
+                                val firstItemIsLoadingItem = listMessage.isNotEmpty() && listMessage.first() is LoadingItem
+                                if (firstItemIsLoadingItem) {
+                                    view?.removeLoadingItem(0)
+                                }
                             }
 
-                            if (listMessage.isNotEmpty() && listMessage.first() is Long) {
-                                if (listMessage.first() as Long - (messages.last() as Message).createdAt < ChatConstant.TIME_DISTANCE) {
+                            val firstItemIsTime = listMessage.isNotEmpty() && listMessage.first() is Long
+                            if (firstItemIsTime) {
+                                val timeDistance = listMessage.first() as Long - (messages.last() as Message).createdAt
+                                if (timeDistance < ChatConstant.TIME_DISTANCE) {
                                     view?.removeItem(0)
                                 }
                             }
 
-                            view?.addMessage(messages, 0, page)
+                            view?.addAll(messages, 0, page)
                         })
             }
         })
@@ -221,8 +300,20 @@ class ChatPresenter : LifecycleObserver {
             message.message = text.trim()
         }
 
-        view?.insertMessage(message)
+        addMessage(message)
 
-        conversationRef?.child(message.id)?.setValue(message)
+        conversationRef?.child(ChatConstant.MESSAGES)?.child(message.id)?.setValue(message)
+    }
+
+    private fun addMessage(message: Message?) {
+        val lastItemIsTypingMessage = listMessage.isNotEmpty()
+                && listMessage.last() is Message
+                && (listMessage.last() as Message).isTypingMessage
+
+        if (lastItemIsTypingMessage) {
+            view?.add(listMessage.size - 1, message)
+        } else {
+            view?.add(listMessage.size, message)
+        }
     }
 }

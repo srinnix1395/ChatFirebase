@@ -1,7 +1,11 @@
 package com.example.ominext.chatfirebase.widget
 
+import android.content.Context
 import android.widget.TextView
+import android.widget.Toast
 import com.example.ominext.chatfirebase.model.Message
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -61,4 +65,16 @@ fun TextView.setTimeAgo(postTime: Long) {
             dateFormat.format(postDate).replace("-", "LÚC")
         }
     }
+}
+
+fun Disposable.addToCompositeDisposable(compositeDisposable: CompositeDisposable) {
+    compositeDisposable.add(this)
+}
+
+fun Int.toast(context: Context) {
+    Toast.makeText(context, this, Toast.LENGTH_SHORT).show()
+}
+
+fun String.toast(context: Context) {
+    Toast.makeText(context, this, Toast.LENGTH_SHORT).show()
 }

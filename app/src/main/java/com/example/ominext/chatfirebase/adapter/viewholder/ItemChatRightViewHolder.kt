@@ -11,6 +11,7 @@ import butterknife.OnClick
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.ominext.chatfirebase.R
+import com.example.ominext.chatfirebase.adapter.AdapterListener
 import com.example.ominext.chatfirebase.model.Message
 import com.example.ominext.chatfirebase.model.StatusMessage
 import com.example.ominext.chatfirebase.model.TypeMessage
@@ -22,7 +23,10 @@ import com.example.ominext.chatfirebase.widget.setTimeAgo
  */
 
 
-class ItemChatRightViewHolder(itemView: View, private val adapterListener: ItemChatLeftViewHolder.AdapterListener?) : RecyclerView.ViewHolder(itemView) {
+class ItemChatRightViewHolder(itemView: View,
+                              positionItemShowTime: Int,
+                              val adapterListener: AdapterListener) : RecyclerView.ViewHolder(itemView) {
+
     @BindView(R.id.textview_itemchatright_message)
     lateinit var tvMessage: TextView
 
@@ -40,8 +44,6 @@ class ItemChatRightViewHolder(itemView: View, private val adapterListener: ItemC
 
     @BindView(R.id.cardview_image)
     lateinit var cardViewImage: CardView
-
-    private var isShowTime: Boolean = false
 
     init {
         ButterKnife.bind(this, itemView)
@@ -107,9 +109,9 @@ class ItemChatRightViewHolder(itemView: View, private val adapterListener: ItemC
 
     @OnClick(R.id.textview_itemchatright_message, R.id.cardview_image, R.id.imageview_heart)
     fun onClickMessage() {
-//        if (adapterListener != null && !adapterListener.isValidToShowTime(adapterPosition)) {
-//            return
-//        }
+        if (!adapterListener.isValidToShowTime(adapterPosition)) {
+            return
+        }
 //        if (isShowTime) {
 //            Utils.collapse(tvTime)
 //            isShowTime = false

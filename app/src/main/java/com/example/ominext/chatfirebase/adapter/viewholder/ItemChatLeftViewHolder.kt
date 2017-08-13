@@ -11,6 +11,7 @@ import butterknife.OnClick
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.ominext.chatfirebase.R
+import com.example.ominext.chatfirebase.adapter.AdapterListener
 import com.example.ominext.chatfirebase.model.Message
 import com.example.ominext.chatfirebase.model.TypeMessage
 import com.example.ominext.chatfirebase.util.Utils
@@ -22,7 +23,8 @@ import com.example.ominext.chatfirebase.widget.setTimeAgo
 
 class ItemChatLeftViewHolder(itemView: View,
                              urlImage: String?,
-                             val adapterListener: AdapterListener?) : RecyclerView.ViewHolder(itemView) {
+                             var positionItemShowTime: Int,
+                             val adapterListener: AdapterListener) : RecyclerView.ViewHolder(itemView) {
 
     @BindView(R.id.textview_chatleft_time)
     lateinit var tvTime: TextView
@@ -41,8 +43,6 @@ class ItemChatLeftViewHolder(itemView: View,
 
     @BindView(R.id.imageview_heart)
     lateinit var imvHeart: ImageView
-
-    private var isShowTime: Boolean = false
 
     init {
         ButterKnife.bind(this, itemView)
@@ -101,27 +101,22 @@ class ItemChatLeftViewHolder(itemView: View,
         tvMessage.text = ""
         tvTime.text = ""
 
-//        com.example.ominext.chatfirebase.util.Utils.showView(imvTyping)
-//        com.example.ominext.chatfirebase.util.Utils.hideView(tvMessage)
-//        com.example.ominext.chatfirebase.util.Utils.hideView(imvHeart)
+        Utils.showView(imvTyping)
+        Utils.hideView(tvMessage)
+        Utils.hideView(imvHeart)
     }
 
     @OnClick(R.id.textview_itemchatleft_message, R.id.cardview_image, R.id.imageview_heart)
-    internal fun onClickMessage() {
-//        if (adapterListener != null && !adapterListener.isValidToShowTime(adapterPosition)) {
-//            return
-//        }
-//        if (isShowTime) {
-//            com.example.ominext.chatfirebase.util.Utils.collapse(tvTime)
-//            isShowTime = false
-//        } else {
-//            com.example.ominext.chatfirebase.util.Utils.expand(tvTime)
-//            isShowTime = true
-//        }
-    }
-
-    interface AdapterListener {
-
-        fun isValidToShowTime(position: Int): Boolean
+    fun onClickMessage() {
+        if (!adapterListener.isValidToShowTime(adapterPosition)) {
+            return
+        }
+        if (positionItemShowTime == adapterPosition) {
+            Utils.hideView(tvTime)
+            positionItemShowTime = -1
+        } else {
+            Utils.showView(tvTime)
+            positionItemShowTime = adapterPosition
+        }
     }
 }

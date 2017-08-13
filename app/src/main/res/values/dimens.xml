@@ -6,7 +6,7 @@
 
     <dimen name="size_item_chat">33dp</dimen>
     <dimen name="padding_horizontal_item_chat">10dp</dimen>
-    <dimen name="margin_top_item_chat">1dp</dimen>
+    <dimen name="margin_top_item_chat">1.5dp</dimen>
     <dimen name="margin_bottom_item_time_chat">2dp</dimen>
     <dimen name="widthScrollbarDetailChat">3dp</dimen>
     <dimen name="padding_horizontal_edittext">10dp</dimen>

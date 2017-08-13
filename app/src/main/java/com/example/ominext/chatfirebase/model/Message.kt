@@ -23,18 +23,20 @@ class Message {
 
     var isSeen: Boolean = false
 
-    var isTypingMessage: Boolean = false
+    val isTypingMessage: Boolean
+        get() {
+            return messageType == TypeMessage.TYPING.name
+        }
 
     constructor()
 
-    constructor(id: String, idSender: String, idReceiver: String, message: String, createdAt: Long, status: String, isTypingMessage: Boolean) {
+    constructor(id: String, idSender: String, idReceiver: String, message: String, createdAt: Long, status: String) {
         this.id = id
         this.idSender = idSender
         this.idReceiver = idReceiver
         this.message = message
         this.createdAt = createdAt
         this.status = status
-        this.isTypingMessage = isTypingMessage
     }
 
     constructor(messageSample: Message) {
@@ -44,14 +46,14 @@ class Message {
         this.message = messageSample.message
         this.createdAt = messageSample.createdAt
         this.status = messageSample.status
-        this.isTypingMessage = messageSample.isTypingMessage
     }
 }
 
 enum class TypeMessage {
     LIKE,
     TEXT,
-    MEDIA
+    MEDIA,
+    TYPING
 }
 
 enum class StatusMessage {
