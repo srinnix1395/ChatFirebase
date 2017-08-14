@@ -82,16 +82,16 @@ class ChatAdapter(val listMessage: ArrayList<Any?>,
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
         when (getItemViewType(position)) {
             ITEM_LOADING -> {
-                (holder as? LoadingViewHolder)?.bindData(listMessage[position] as LoadingItem)
+                (holder as LoadingViewHolder).bindData(listMessage[position] as LoadingItem)
             }
             ITEM_LEFT -> {
-                (holder as? ItemChatLeftViewHolder)?.bindData(listMessage[position] as Message)
+                (holder as ItemChatLeftViewHolder).bindData(listMessage[position] as Message)
             }
             ITEM_RIGHT -> {
-                (holder as? ItemChatRightViewHolder)?.bindData(listMessage[position] as Message)
+                (holder as ItemChatRightViewHolder).bindData(listMessage[position] as Message)
             }
             ITEM_TIME -> {
-                (holder as? ItemChatTimeViewHolder)?.bindData(listMessage[position] as Long)
+                (holder as ItemChatTimeViewHolder).bindData(listMessage[position] as Long)
             }
         }
     }
@@ -121,7 +121,7 @@ class ChatAdapter(val listMessage: ArrayList<Any?>,
         return listMessage[position - 1] !is Long
     }
 
-    fun add(index: Int = listMessage.size, message: Message?) {
+    fun add(index: Int = listMessage.size, message: Any?) {
         listMessage.add(index, message)
         notifyItemInserted(index)
     }

@@ -89,9 +89,9 @@ class ChatListPresenter : LifecycleObserver {
                 toast(p0.message)
             }
 
-            override fun onDataChange(p0: DataSnapshot) {
-                if (p0.hasChildren()) {
-                    Observable.fromIterable(p0.children)
+            override fun onDataChange(data: DataSnapshot) {
+                if (data.hasChildren()) {
+                    Observable.fromIterable(data.children)
                             .map { child ->
                                 child.getValue(User::class.java)
                             }

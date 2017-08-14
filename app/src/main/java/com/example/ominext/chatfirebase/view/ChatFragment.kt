@@ -83,7 +83,7 @@ class ChatFragment : Fragment() {
 
                 if (dy >= 0) return
 
-                if (layoutManager.findFirstCompletelyVisibleItemPosition() - 1 <= 0) {
+                if (layoutManager.findFirstVisibleItemPosition() - 1 <= 0) {
                     mPresenter.onLoadMessage()
                 }
             }
@@ -154,7 +154,7 @@ class ChatFragment : Fragment() {
     fun addLoadingItem() {
         val size = mPresenter.listMessage.size
         if (size > 0 && mPresenter.listMessage.first() !is LoadingItem) {
-            mPresenter.listMessage.add(0, LoadingItem())
+            mAdapter.add(0, LoadingItem())
         }
     }
 
@@ -169,10 +169,15 @@ class ChatFragment : Fragment() {
         }
     }
 
-    fun add(index: Int, message: Message?) {
+    fun add(index: Int, message: Any?, isScrollToBottom: Boolean = true, isClearEditText: Boolean = false) {
         mAdapter.add(index, message)
-        etMessage.text.clear()
-        scrollToBottom()
+        if (isClearEditText) {
+            etMessage.text.clear()
+        }
+
+        if (isScrollToBottom) {
+            scrollToBottom()
+        }
     }
 
     fun updateStatusMessage(idMessage: String?, createdAt: Long?) {

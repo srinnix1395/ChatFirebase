@@ -7,8 +7,8 @@ package com.example.ominext.chatfirebase.constant
 
 object ChatConstant {
 
-    val ITEM_MESSAGE_PER_PAGE = 25
-    val TIME_DISTANCE: Long = 300_000
+    val ITEM_MESSAGE_PER_PAGE = 20
+    val TIME_DISTANCE: Long = 10_000
 
     //
     val _ID = "id"

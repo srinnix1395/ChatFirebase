@@ -120,7 +120,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         val mapOffline = HashMap<String, Any?>()
         mapOffline.put(ChatConstant.STATUS, Status.OFFLINE.name)
         mapOffline.put(ChatConstant.LAST_ONLINE, ServerValue.TIMESTAMP)
-        userRef?.onDisconnect()?.updateChildren(mapOffline)
+        userRef?.child(userFirebase?.uid)?.onDisconnect()?.updateChildren(mapOffline)
     }
 
     private fun moveToMainFragment() {

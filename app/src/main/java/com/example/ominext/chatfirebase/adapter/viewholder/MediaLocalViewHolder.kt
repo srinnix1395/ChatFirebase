@@ -9,8 +9,8 @@ import butterknife.ButterKnife
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.ominext.chatfirebase.R
-import com.example.ominext.chatfirebase.util.Utils
 import com.example.ominext.chatfirebase.model.MediaLocal
+import com.example.ominext.chatfirebase.util.Utils
 
 /**
  * Created by anhtu on 4/24/2017.
@@ -20,16 +20,16 @@ class MediaLocalViewHolder(itemView: View,
                            listener: (position: Int) -> Unit) : RecyclerView.ViewHolder(itemView) {
 
     @BindView(R.id.imageview_image)
-    internal var imvImage: ImageView? = null
+    lateinit var imvImage: ImageView
 
     @BindView(R.id.imageview_alpha)
-    internal var imvAlpha: ImageView? = null
+    lateinit var imvAlpha: ImageView
 
     @BindView(R.id.textview_gif)
-    internal var tvGif: TextView? = null
+    lateinit var tvGif: TextView
 
     @BindView(R.id.textview_video)
-    internal var tvVideo: TextView? = null
+    lateinit var tvVideo: TextView
 
     init {
         ButterKnife.bind(this, itemView)
@@ -48,7 +48,7 @@ class MediaLocalViewHolder(itemView: View,
                                 .error(R.drawable.dummy_image))
                         .into(imvImage)
 
-                tvVideo!!.text = Utils.getDurationVideo(media.duration)
+                tvVideo.text = Utils.getDurationVideo(media.duration)
 
                 Utils.showView(tvVideo)
                 Utils.hideView(tvGif)
@@ -80,9 +80,9 @@ class MediaLocalViewHolder(itemView: View,
 
     fun bindSelected(isSelected: Boolean?) {
         if (isSelected!!) {
-            imvAlpha!!.setImageResource(R.drawable.background_item_image_picker)
+            imvAlpha.setImageResource(R.drawable.background_item_image_picker)
         } else {
-            imvAlpha!!.setImageDrawable(null)
+            imvAlpha.setImageDrawable(null)
         }
     }
 }

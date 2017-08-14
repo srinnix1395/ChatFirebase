@@ -10,6 +10,7 @@ import com.example.ominext.chatfirebase.util.DebugLog
 import com.example.ominext.chatfirebase.util.Utils
 import com.example.ominext.chatfirebase.util.toast
 import com.example.ominext.chatfirebase.view.ChatFragment
+import com.example.ominext.chatfirebase.widget.isExistIn
 import com.example.ominext.chatfirebase.widget.isNotExistIn
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
@@ -37,7 +38,6 @@ class ChatPresenter : LifecycleObserver {
     var page: Int = FIRST_PAGE
     var isLoading: Boolean = false
     var hasNext: Boolean = true
-    var isLoadedInitial: Boolean = false
     val subjectTyping: PublishSubject<Boolean> = PublishSubject.create()
     var isUserTyping: Boolean = false
         set(value) {
@@ -74,8 +74,8 @@ class ChatPresenter : LifecycleObserver {
 
         conversationRef = ChatApplication.app?.db?.child(ChatConstant.CONVERSATIONS)?.child(conversationKey)
 
-        addUserListener()
         addMessageListener()
+        addUserListener()
         addTypingListener()
     }
 
@@ -85,8 +85,8 @@ class ChatPresenter : LifecycleObserver {
                 DebugLog.e(p0?.message!!)
             }
 
-            override fun onDataChange(p0: DataSnapshot?) {
-                val user = p0?.getValue(User::class.java)
+            override fun onDataChange(data: DataSnapshot?) {
+                val user = data?.getValue(User::class.java)
                 user?.let {
                     view?.setStatus(user.status)
                 }
@@ -100,8 +100,8 @@ class ChatPresenter : LifecycleObserver {
 
             }
 
-            override fun onDataChange(p0: DataSnapshot?) {
-                val isFriendTyping = p0?.getValue(Boolean::class.java)
+            override fun onDataChange(data: DataSnapshot?) {
+                val isFriendTyping = data?.getValue(Boolean::class.java)
 
                 isFriendTyping?.let {
                     val isUserTypingChanged = listMessage.isNotEmpty()
@@ -123,7 +123,10 @@ class ChatPresenter : LifecycleObserver {
     }
 
     private fun addMessageListener() {
-        conversationRef?.child(ChatConstant.MESSAGES)?.addChildEventListener(object : ChildEventListener {
+        conversationRef?.child(ChatConstant.MESSAGES)
+                ?.orderByChild(ChatConstant.CREATED_AT)
+                ?.startAt(System.currentTimeMillis().toDouble())
+                ?.addChildEventListener(object : ChildEventListener {
             override fun onCancelled(p0: DatabaseError?) {
 
             }
@@ -133,28 +136,17 @@ class ChatPresenter : LifecycleObserver {
             }
 
             override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
-                if (!isLoadedInitial) {
-                    return
-                }
-                println("Child changed: ${p0?.value}")
-
+                //Child changed when message sent
                 val message: Message? = p0?.getValue(Message::class.java)
-                if (listMessage.isNotExistIn(message)) {
-                    addMessage(message)
-                } else {
+                if (listMessage.isExistIn(message)) {
                     view?.updateStatusMessage(message?.id, message?.createdAt)
                 }
             }
 
             override fun onChildAdded(p0: DataSnapshot?, p1: String?) {
-                if (!isLoadedInitial) {
-                    return
-                }
-
-                println("Child added: ${p0?.value}")
                 val message: Message? = p0?.getValue(Message::class.java)
                 if (listMessage.isNotExistIn(message)) {
-                    addMessage(message)
+                    addMessage(message, false)
                 }
             }
 
@@ -200,30 +192,27 @@ class ChatPresenter : LifecycleObserver {
                 isLoading = false
             }
 
-            override fun onDataChange(p0: DataSnapshot) {
+            override fun onDataChange(data: DataSnapshot) {
                 val messages = arrayListOf<Any>()
-                var addedItemsCount = 0
-                val childrenCount = p0.childrenCount.toInt()
+                var addedMessageItemsCount = 0
+                val childrenCount = data.childrenCount.toInt()
 
                 if (page > FIRST_PAGE && childrenCount == 1) {
                     hasNext = false
                     isLoading = false
-                    isLoadedInitial = true
                     return
                 }
 
-                Observable.fromIterable(p0.children)
+                Observable.fromIterable(data.children)
                         .map { child ->
-                            println(Thread.currentThread().name)
-
                             val value = child.getValue(Message::class.java)
                             messages.add(value!!)
-                            addedItemsCount++
+                            addedMessageItemsCount++
 
                             return@map value
                         }
                         .scan(Message(), { prevItem, currentItem ->
-                            val isLastItem = (addedItemsCount == childrenCount)
+                            val isLastItem = (addedMessageItemsCount == childrenCount)
                             if (isLastItem) {
                                 return@scan currentItem
                             }
@@ -236,16 +225,15 @@ class ChatPresenter : LifecycleObserver {
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
                         .doFinally {
-                            hasNext = addedItemsCount == ChatConstant.ITEM_MESSAGE_PER_PAGE
+                            hasNext = childrenCount == ChatConstant.ITEM_MESSAGE_PER_PAGE
                             page++
                             isLoading = false
-                            isLoadedInitial = true
                         }
                         .subscribe({
                             //onNext: do nothing
-                        }, {
+                        }, { throwable ->
                             //onError:
-
+                            throwable.printStackTrace()
                         }, {
                             //onComplete
                             if (messages.size >= 2) {
@@ -300,20 +288,46 @@ class ChatPresenter : LifecycleObserver {
             message.message = text.trim()
         }
 
-        addMessage(message)
+        //START add item time when time distance is greater than ChatConstant.TIME_DISTANCE
+        if (listMessage.isEmpty()) {
+            view?.add(0, message.createdAt, false)
+        } else {
+            if ((listMessage.last() as Message).isTypingMessage) {
+                if (listMessage.size >= 2) {
+                    //check the penultimate item
+                    val isTimeDistanceWithLastItemExceed = listMessage[listMessage.size - 2] is Message && message.createdAt - (listMessage[listMessage.size - 2] as Message).createdAt > ChatConstant.TIME_DISTANCE
+                    if (isTimeDistanceWithLastItemExceed) {
+                        //insert item time to the before position of typing message
+                        view?.add(listMessage.size - 1, message.createdAt, false)
+                    }
+                } else {
+                    //list have only one typing message
+                    view?.add(0, message.createdAt, false)
+                }
+            } else {
+                //check the last item
+                val isTimeDistanceWithLastItemExceed = listMessage.last() is Message && message.createdAt - (listMessage.last() as Message).createdAt > ChatConstant.TIME_DISTANCE
+                if (isTimeDistanceWithLastItemExceed) {
+                    view?.add(listMessage.size, message.createdAt, false)
+                }
+            }
+        }
+        //END add item time when time distance is greater than ChatConstant.TIME_DISTANCE
+
+        addMessage(message, true)
 
         conversationRef?.child(ChatConstant.MESSAGES)?.child(message.id)?.setValue(message)
     }
 
-    private fun addMessage(message: Message?) {
+    private fun addMessage(message: Message?, isClearEditText: Boolean) {
         val lastItemIsTypingMessage = listMessage.isNotEmpty()
                 && listMessage.last() is Message
                 && (listMessage.last() as Message).isTypingMessage
 
         if (lastItemIsTypingMessage) {
-            view?.add(listMessage.size - 1, message)
+            view?.add(listMessage.size - 1, message, isClearEditText = isClearEditText)
         } else {
-            view?.add(listMessage.size, message)
+            view?.add(listMessage.size, message, isClearEditText = isClearEditText)
         }
     }
 }

@@ -51,10 +51,15 @@ fun TextView.setTimeAgo(postTime: Long) {
         }
         isInXDaysAgo(postTime, 7) -> {
             dateFormat.applyPattern("EEE - kk:mm")
-            StringBuilder(dateFormat.format(postDate).replace("-", "LÚC"))
-                    .insert(2, "ứ")
-                    .toString()
-                    .toUpperCase()
+            val builder = StringBuilder(dateFormat.format(postDate).replace("-", "LÚC"))
+            if (builder.contains("CN")) {
+                builder
+            } else {
+                builder
+                        .insert(2, "ứ")
+                        .toString()
+                        .toUpperCase()
+            }
         }
         currentDate.isTheSameYear(postDate) -> {
             dateFormat.applyPattern("dd MMM - kk:mm")

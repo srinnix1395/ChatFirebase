@@ -35,9 +35,10 @@ class ChatListActivity : AppCompatActivity() {
 
     private fun signOut() {
         ChatApplication.app?.firebaseAuth?.signOut()
-        finish()
 
         val intent: Intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
+
+        finish()
     }
 }
