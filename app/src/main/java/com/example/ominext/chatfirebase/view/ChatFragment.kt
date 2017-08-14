@@ -189,14 +189,22 @@ class ChatFragment : Fragment() {
         mAdapter.removeItem(position)
     }
 
-    fun showTypingMessage(isFriendTyping: Boolean) {
+    fun showTypingMessage(isFriendTyping: Boolean, addTime: Boolean = false, time: Long = 0) {
         if (isFriendTyping) {
             val messageTyping = Message()
             messageTyping.messageType = TypeMessage.TYPING.name
 
+            if (addTime) {
+                mAdapter.add(message = time)
+            }
             mAdapter.add(message = messageTyping)
             scrollToBottom()
         } else {
+            if (addTime) {
+                //remove item time
+                mAdapter.removeItem()
+            }
+            //remove item typing message
             mAdapter.removeItem()
         }
     }
@@ -205,5 +213,10 @@ class ChatFragment : Fragment() {
         if (mPresenter.listMessage.isNotEmpty()) {
             rvChat.scrollToPosition(mPresenter.listMessage.size - 1)
         }
+    }
+
+    fun updateTypingMessage(index: Int, message: Message) {
+        mAdapter.updateMessage(index, message)
+        scrollToBottom()
     }
 }

@@ -10,8 +10,6 @@ import com.example.ominext.chatfirebase.util.DebugLog
 import com.example.ominext.chatfirebase.util.Utils
 import com.example.ominext.chatfirebase.util.toast
 import com.example.ominext.chatfirebase.view.ChatFragment
-import com.example.ominext.chatfirebase.widget.isExistIn
-import com.example.ominext.chatfirebase.widget.isNotExistIn
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import io.reactivex.Observable
@@ -109,7 +107,12 @@ class ChatPresenter : LifecycleObserver {
                             && (listMessage.last() as Message).isTypingMessage != isFriendTyping
 
                     if (isUserTypingChanged) {
-                        view?.showTypingMessage(isFriendTyping)
+                        val currentTime = System.currentTimeMillis()
+                        when {
+                            listMessage.isEmpty() -> view?.showTypingMessage(isFriendTyping, true, currentTime)
+                            currentTime - (listMessage.last() as Message).createdAt > ChatConstant.TIME_DISTANCE -> view?.showTypingMessage(isFriendTyping, true, currentTime)
+                            else -> view?.showTypingMessage(isFriendTyping)
+                        }
                     }
                 }
             }
@@ -127,33 +130,47 @@ class ChatPresenter : LifecycleObserver {
                 ?.orderByChild(ChatConstant.CREATED_AT)
                 ?.startAt(System.currentTimeMillis().toDouble())
                 ?.addChildEventListener(object : ChildEventListener {
-            override fun onCancelled(p0: DatabaseError?) {
+                    override fun onCancelled(p0: DatabaseError?) {
 
-            }
+                    }
 
-            override fun onChildMoved(p0: DataSnapshot?, p1: String?) {
+                    override fun onChildMoved(p0: DataSnapshot?, p1: String?) {
 
-            }
+                    }
 
-            override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
-                //Child changed when message sent
-                val message: Message? = p0?.getValue(Message::class.java)
-                if (listMessage.isExistIn(message)) {
-                    view?.updateStatusMessage(message?.id, message?.createdAt)
-                }
-            }
+                    override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
+                        //Child changed when message sent
+                        p0?.value?.let {
+                            val id: String = (p0.value as HashMap<*, *>)[ChatConstant._ID].toString()
+                            val createdAt: Long = (p0.value as HashMap<*, *>)[ChatConstant.CREATED_AT] as Long
+                            view?.updateStatusMessage(id, createdAt)
+                        }
+                    }
 
-            override fun onChildAdded(p0: DataSnapshot?, p1: String?) {
-                val message: Message? = p0?.getValue(Message::class.java)
-                if (listMessage.isNotExistIn(message)) {
-                    addMessage(message, false)
-                }
-            }
+                    override fun onChildAdded(p0: DataSnapshot?, p1: String?) {
+                        p0?.value?.let {
+                            if ((p0.value as HashMap<*, *>)[ChatConstant.ID_SENDER] == currentUser?.uid) {
+                                return
+                            }
 
-            override fun onChildRemoved(p0: DataSnapshot?) {
+                            val message: Message? = p0.getValue(Message::class.java)
+                            message?.let {
+                                //check if last item is typing message -> update typing message, don't need to add time item
+                                if (listMessage.isNotEmpty() && (listMessage.last() as Message).isTypingMessage) {
+                                    view?.updateTypingMessage(listMessage.size - 1, message)
+                                } else {
+                                    //because last item it's not time item -> need to check to whether to add item or not
+                                    checkToAddTimeItem(it)
+                                    addMessageItem(message, false)
+                                }
+                            }
+                        }
+                    }
 
-            }
-        })
+                    override fun onChildRemoved(p0: DataSnapshot?) {
+
+                    }
+                })
     }
 
     fun onUserTyping(text: String) {
@@ -204,19 +221,24 @@ class ChatPresenter : LifecycleObserver {
                 }
 
                 Observable.fromIterable(data.children)
+                        .filter {
+                            if (page == FIRST_PAGE) {
+                                //if the first load, don't skip any items
+                                return@filter true
+                            } else {
+                                //skip the last item,
+                                return@filter addedMessageItemsCount < childrenCount - 1
+                            }
+                        }
                         .map { child ->
+                            addedMessageItemsCount++
+
                             val value = child.getValue(Message::class.java)
                             messages.add(value!!)
-                            addedMessageItemsCount++
 
                             return@map value
                         }
                         .scan(Message(), { prevItem, currentItem ->
-                            val isLastItem = (addedMessageItemsCount == childrenCount)
-                            if (isLastItem) {
-                                return@scan currentItem
-                            }
-
                             if (currentItem.createdAt - prevItem.createdAt >= ChatConstant.TIME_DISTANCE) {
                                 messages.add(messages.size - 1, currentItem.createdAt)
                             }
@@ -238,10 +260,6 @@ class ChatPresenter : LifecycleObserver {
                             //onComplete
                             if (messages.size >= 2) {
                                 pivotMessageId = (messages[1] as Message).id
-
-                                if (page > FIRST_PAGE) {
-                                    messages.removeAt(messages.size - 1)
-                                }
                             }
 
                             if (page == FIRST_PAGE) {
@@ -276,7 +294,6 @@ class ChatPresenter : LifecycleObserver {
         val message: Message = Message()
         message.id = conversationRef?.push()?.key
         message.idSender = currentUser?.uid
-        message.idReceiver = userFriend?.uid
         message.status = StatusMessage.PENDING.name
         message.createdAt = System.currentTimeMillis()
 
@@ -288,11 +305,34 @@ class ChatPresenter : LifecycleObserver {
             message.message = text.trim()
         }
 
+//        val messageMap = HashMap<String, Any>()
+//        messageMap.put(ChatConstant._ID, message.id!!)
+//        messageMap.put(ChatConstant.ID_SENDER, currentUser?.uid!!)
+//        messageMap.put(ChatConstant.STATUS, StatusMessage.PENDING.name)
+//        messageMap.put(ChatConstant.CREATED_AT, ServerValue.TIMESTAMP)
+//
+//        if (typeMessage == 0 || typeMessage == 1) {
+//            messageMap.put(ChatConstant.MESSAGE_TYPE, TypeMessage.LIKE.name)
+//        } else {
+//            messageMap.put(ChatConstant.MESSAGE_TYPE, TypeMessage.TEXT.name)
+//            messageMap.put(ChatConstant.MESSAGE, text.trim())
+//        }
+
         //START add item time when time distance is greater than ChatConstant.TIME_DISTANCE
-        if (listMessage.isEmpty()) {
-            view?.add(0, message.createdAt, false)
-        } else {
-            if ((listMessage.last() as Message).isTypingMessage) {
+        checkToAddTimeItem(message)
+        //END add item time when time distance is greater than ChatConstant.TIME_DISTANCE
+
+        addMessageItem(message, true)
+
+        conversationRef?.child(ChatConstant.MESSAGES)?.child(message.id)?.setValue(message)
+    }
+
+    private fun checkToAddTimeItem(message: Message) {
+        when {
+            listMessage.isEmpty() -> {
+                view?.add(0, message.createdAt, false)
+            }
+            (listMessage.last() as Message).isTypingMessage -> {
                 if (listMessage.size >= 2) {
                     //check the penultimate item
                     val isTimeDistanceWithLastItemExceed = listMessage[listMessage.size - 2] is Message && message.createdAt - (listMessage[listMessage.size - 2] as Message).createdAt > ChatConstant.TIME_DISTANCE
@@ -304,7 +344,8 @@ class ChatPresenter : LifecycleObserver {
                     //list have only one typing message
                     view?.add(0, message.createdAt, false)
                 }
-            } else {
+            }
+            else -> {
                 //check the last item
                 val isTimeDistanceWithLastItemExceed = listMessage.last() is Message && message.createdAt - (listMessage.last() as Message).createdAt > ChatConstant.TIME_DISTANCE
                 if (isTimeDistanceWithLastItemExceed) {
@@ -312,14 +353,9 @@ class ChatPresenter : LifecycleObserver {
                 }
             }
         }
-        //END add item time when time distance is greater than ChatConstant.TIME_DISTANCE
-
-        addMessage(message, true)
-
-        conversationRef?.child(ChatConstant.MESSAGES)?.child(message.id)?.setValue(message)
     }
 
-    private fun addMessage(message: Message?, isClearEditText: Boolean) {
+    private fun addMessageItem(message: Message?, isClearEditText: Boolean) {
         val lastItemIsTypingMessage = listMessage.isNotEmpty()
                 && listMessage.last() is Message
                 && (listMessage.last() as Message).isTypingMessage

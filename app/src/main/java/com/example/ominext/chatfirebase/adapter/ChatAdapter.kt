@@ -144,6 +144,11 @@ class ChatAdapter(val listMessage: ArrayList<Any?>,
         }
     }
 
+    fun updateMessage(index: Int, message: Message) {
+        (listMessage[index] as Message).copy(message)
+        notifyItemChanged(index)
+    }
+
     fun removeItem(position: Int = listMessage.size - 1) {
         listMessage.removeAt(position)
         notifyItemRemoved(position)

@@ -18,9 +18,13 @@ object ChatConstant {
     val STATUS = "status"
     val LAST_ONLINE = "lastOnline"
     val CREATED_AT = "createdAt"
+    val ID_SENDER = "idSender"
 
     val TYPING_MESSAGE = "typing"
     val MESSAGES = "messages"
+    val MESSAGE = "message"
+    val MESSAGE_TYPE = "messageType"
+    val IS_SEEN = "isSeen"
     val KEY_MEDIA = "key_media"
     val KEY_MEDIA_TYPE = "key_media_type"
     val TYPE_IMAGE = 1
