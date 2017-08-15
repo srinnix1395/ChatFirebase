@@ -61,8 +61,8 @@ object Utils {
                 && mConnectivityManager.activeNetworkInfo.isConnected
     }
 
-    fun getTimeAgoUser(context: Context, time: Long?): String {
-        if (time == null) {
+    fun getTimeAgoUser(context: Context?, time: Long?): String {
+        if (time == null || context == null) {
             return ""
         }
 
