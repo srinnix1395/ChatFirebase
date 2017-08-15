@@ -189,18 +189,18 @@ class ChatFragment : Fragment() {
         mAdapter.removeItem(position)
     }
 
-    fun showTypingMessage(isFriendTyping: Boolean, addTime: Boolean = false, time: Long = 0) {
+    fun showTypingMessage(isFriendTyping: Boolean, addOrRemoveTime: Boolean = false, time: Long = 0) {
         if (isFriendTyping) {
             val messageTyping = Message()
             messageTyping.messageType = TypeMessage.TYPING.name
 
-            if (addTime) {
+            if (addOrRemoveTime) {
                 mAdapter.add(message = time)
             }
             mAdapter.add(message = messageTyping)
             scrollToBottom()
         } else {
-            if (addTime) {
+            if (addOrRemoveTime) {
                 //remove item time
                 mAdapter.removeItem()
             }

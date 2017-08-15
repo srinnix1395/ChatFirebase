@@ -109,9 +109,41 @@ class ChatPresenter : LifecycleObserver {
                     if (isUserTypingChanged) {
                         val currentTime = System.currentTimeMillis()
                         when {
+                        // list's empty -> add time
                             listMessage.isEmpty() -> view?.showTypingMessage(isFriendTyping, true, currentTime)
-                            currentTime - (listMessage.last() as Message).createdAt > ChatConstant.TIME_DISTANCE -> view?.showTypingMessage(isFriendTyping, true, currentTime)
-                            else -> view?.showTypingMessage(isFriendTyping)
+                        //last item is typing message
+                            (listMessage.last() as Message).isTypingMessage -> {
+                                when {
+                                // penultimate item is time item -> remove time
+                                    listMessage[listMessage.size - 2] is Long -> {
+                                        view?.showTypingMessage(isFriendTyping, true, currentTime)
+                                    }
+                                // penultimate item is time item -> don't remove time
+                                    listMessage[listMessage.size - 2] is Message -> {
+                                        view?.showTypingMessage(isFriendTyping, false, currentTime)
+                                    }
+                                }
+                            }
+                        //last item is not typing message
+                            else -> {
+                                when {
+                                    listMessage.size >= 2 -> {
+                                        when {
+                                        // penultimate item is time item -> remove time
+                                            listMessage[listMessage.size - 2] is Long -> {
+                                                view?.showTypingMessage(isFriendTyping, true, currentTime)
+                                            }
+                                        // penultimate item is time item -> don't remove time
+                                            listMessage[listMessage.size - 2] is Message -> {
+                                                view?.showTypingMessage(isFriendTyping, false, currentTime)
+                                            }
+                                        }
+                                    }
+                                    else -> {
+                                        view?.showTypingMessage(isFriendTyping, false, currentTime)
+                                    }
+                                }
+                            }
                         }
                     }
                 }

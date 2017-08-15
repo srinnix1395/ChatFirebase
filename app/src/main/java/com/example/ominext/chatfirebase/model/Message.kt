@@ -26,8 +26,7 @@ class Message {
 
     var isSeen: Boolean = false
 
-    var isTypingMessage: Boolean = false
-        private set
+    val isTypingMessage: Boolean
         get() {
             return messageType == TypeMessage.TYPING.name
         }
