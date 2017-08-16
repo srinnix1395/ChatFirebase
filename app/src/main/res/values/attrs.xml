@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <attr name="measureType">
-        <enum name="Width" value="1"/>
-        <enum name="Height" value="2"/>
+        <enum name="Width" value="1" />
+        <enum name="Height" value="2" />
     </attr>
 
     <declare-styleable name="SquareItemLayout">
-        <attr name="measureType"/>
+        <attr name="measureType" />
     </declare-styleable>
 
+    <declare-styleable name="MessageTextView">
+        <attr name="typing_src" format="reference" />
+        <attr name="like_src" format="reference" />
+        <attr name="text_color" format="reference" />
+        <attr name="text_size" format="dimension" />
+    </declare-styleable>
 </resources>

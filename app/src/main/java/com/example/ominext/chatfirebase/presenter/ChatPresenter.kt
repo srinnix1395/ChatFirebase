@@ -31,13 +31,13 @@ class ChatPresenter : LifecycleObserver {
     var currentUser: FirebaseUser? = null
     var userFriend: User? = null
 
-    lateinit var conversationKey: String
+    private lateinit var conversationKey: String
     var pivotMessageId: String? = null
     var page: Int = FIRST_PAGE
     var isLoading: Boolean = false
     var hasNext: Boolean = true
-    val subjectTyping: PublishSubject<Boolean> = PublishSubject.create()
-    var isUserTyping: Boolean = false
+    private val subjectTyping: PublishSubject<Boolean> = PublishSubject.create()
+    private var isUserTyping: Boolean = false
         set(value) {
             field = value
             conversationRef
@@ -64,10 +64,10 @@ class ChatPresenter : LifecycleObserver {
 
     fun getData(arguments: Bundle) {
         userFriend = arguments.getParcelable(ChatConstant.USER)
-        if (currentUser?.uid?.compareTo(userFriend?.uid!!)!! > 0) {
-            conversationKey = currentUser?.uid + userFriend?.uid
+        conversationKey = if (currentUser?.uid?.compareTo(userFriend?.uid!!)!! > 0) {
+            currentUser?.uid + userFriend?.uid
         } else {
-            conversationKey = userFriend?.uid + currentUser?.uid
+            userFriend?.uid + currentUser?.uid
         }
 
         conversationRef = ChatApplication.app?.db?.child(ChatConstant.CONVERSATIONS)?.child(conversationKey)
@@ -119,7 +119,7 @@ class ChatPresenter : LifecycleObserver {
                         }
                     } else {
                         //remove typing message
-                        if (listMessage.isEmpty() || !(listMessage.last() as Message).isTypingMessage) {
+                        if (listMessage.isEmpty() || !(listMessage.last() as Message).isTypingMessage()) {
                             return@let
                         } else if (listMessage[listMessage.size - 2] is Long) {
                             view?.showTypingMessage(false, true)
@@ -169,7 +169,7 @@ class ChatPresenter : LifecycleObserver {
                             val message: Message? = p0.getValue(Message::class.java)
                             message?.let {
                                 //check if last item is typing message -> update typing message, don't need to add time item
-                                if (listMessage.isNotEmpty() && (listMessage.last() as Message).isTypingMessage) {
+                                if (listMessage.isNotEmpty() && (listMessage.last() as Message).isTypingMessage()) {
                                     view?.updateTypingMessage(listMessage.size - 1, message)
                                 } else {
                                     //because last item it's not time item -> need to check to whether to add item or not
@@ -304,7 +304,7 @@ class ChatPresenter : LifecycleObserver {
             return
         }
 
-        val message: Message = Message()
+        val message = Message()
         message.id = conversationRef?.push()?.key
         message.idSender = currentUser?.uid
         message.status = StatusMessage.PENDING.name
@@ -345,7 +345,7 @@ class ChatPresenter : LifecycleObserver {
             listMessage.isEmpty() -> {
                 view?.add(0, message.createdAt, false)
             }
-            (listMessage.last() as Message).isTypingMessage -> {
+            (listMessage.last() as Message).isTypingMessage() -> {
                 if (listMessage.size >= 2) {
                     //check the penultimate item
                     val isTimeDistanceWithLastItemExceed = listMessage[listMessage.size - 2] is Message && message.createdAt - (listMessage[listMessage.size - 2] as Message).createdAt > ChatConstant.TIME_DISTANCE
@@ -365,13 +365,15 @@ class ChatPresenter : LifecycleObserver {
                     view?.add(listMessage.size, message.createdAt, false)
                 }
             }
+
         }
     }
 
     private fun addMessageItem(message: Message?, isClearEditText: Boolean) {
         val lastItemIsTypingMessage = listMessage.isNotEmpty()
                 && listMessage.last() is Message
-                && (listMessage.last() as Message).isTypingMessage
+                && (listMessage.last() as Message).isTypingMessage()
+
 
         if (lastItemIsTypingMessage) {
             view?.add(listMessage.size - 1, message, isClearEditText = isClearEditText)

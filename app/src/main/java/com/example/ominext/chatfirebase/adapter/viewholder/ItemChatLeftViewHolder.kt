@@ -52,7 +52,7 @@ class ItemChatLeftViewHolder(itemView: View,
 
         //        bindImage(message.isDisplayIcon());
 
-        if (message.isTypingMessage) {
+        if (message.isTypingMessage()) {
             bindDataMessageTyping()
         } else {
             bindDataMessage(message)
