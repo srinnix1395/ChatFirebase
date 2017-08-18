@@ -23,7 +23,7 @@ import com.example.ominext.chatfirebase.constant.ChatConstant
 import com.example.ominext.chatfirebase.model.LoadingItem
 import com.example.ominext.chatfirebase.model.Message
 import com.example.ominext.chatfirebase.model.Status
-import com.example.ominext.chatfirebase.model.TypeMessage
+import com.example.ominext.chatfirebase.model.MessageType
 import com.example.ominext.chatfirebase.presenter.ChatPresenter
 import com.example.ominext.chatfirebase.util.Utils
 
@@ -192,7 +192,7 @@ class ChatFragment : Fragment() {
     fun showTypingMessage(isFriendTyping: Boolean, addOrRemoveTime: Boolean = false, time: Long = 0) {
         if (isFriendTyping) {
             val messageTyping = Message()
-            messageTyping.messageType = TypeMessage.TYPING.name
+            messageTyping.messageType = MessageType.TYPING.name
 
             if (addOrRemoveTime) {
                 mAdapter.add(message = time)

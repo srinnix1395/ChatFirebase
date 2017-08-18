@@ -1,19 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.example.ominext.chatfirebase.widget.MessageTextView
-        android:layout_width="wrap_content"
-        android:layout_height="33dp"
-        app:text_color="@color/colorPrimaryText"
-        app:text_size="14sp"
-        app:typing_src="@drawable/ic_dot_horizontal" />
-
-    <TextView
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="33dp"
-        android:text="hello" />
-</LinearLayout>
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+
+        <ImageView
+            android:id="@+id/imageview_heart"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/size_item_chat"
+            android:layout_marginStart="10dp"
+            app:srcCompat="@drawable/ic_heart_fill" />
+
+        <com.example.ominext.chatfirebase.widget.MessageTextView
+            style="@style/TextViewItemChatLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:like_size="33dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/background_itemchatleft"
+            android:gravity="center_vertical"
+            android:paddingBottom="@dimen/padding_vertical_item_chat"
+            android:paddingEnd="@dimen/padding_horizontal_item_chat"
+            android:paddingStart="@dimen/padding_horizontal_item_chat"
+            android:paddingTop="@dimen/padding_vertical_item_chat"
+            app:like_src="@drawable/ic_heart_fill"
+            app:text_color="@color/colorPrimaryText"
+            app:text_maxWidth="250dp"
+            app:text_size="14sp"
+            app:typing_src="@drawable/ic_dot_horizontal" />
+
+        <ImageView
+            android:id="@+id/imageview_typing"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/size_item_chat"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/background_itemchatleft"
+            android:paddingEnd="@dimen/padding_horizontal_item_chat"
+            android:paddingStart="@dimen/padding_horizontal_item_chat"
+            app:srcCompat="@drawable/ic_dot_horizontal" />
+    </LinearLayout>
+</ScrollView>

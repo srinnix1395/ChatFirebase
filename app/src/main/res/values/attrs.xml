@@ -11,8 +11,11 @@
 
     <declare-styleable name="MessageTextView">
         <attr name="typing_src" format="reference" />
+        <attr name="typing_size" format="dimension" />
         <attr name="like_src" format="reference" />
+        <attr name="like_size" format="dimension" />
         <attr name="text_color" format="reference" />
         <attr name="text_size" format="dimension" />
+        <attr name="text_maxWidth" format="dimension" />
     </declare-styleable>
 </resources>

@@ -13,7 +13,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.example.ominext.chatfirebase.R
 import com.example.ominext.chatfirebase.adapter.AdapterListener
 import com.example.ominext.chatfirebase.model.Message
-import com.example.ominext.chatfirebase.model.TypeMessage
+import com.example.ominext.chatfirebase.model.MessageType
 import com.example.ominext.chatfirebase.util.Utils
 import com.example.ominext.chatfirebase.widget.setTimeAgo
 
@@ -64,7 +64,7 @@ class ItemChatLeftViewHolder(itemView: View,
         Utils.hideView(imvTyping)
 
         when (message.messageType) {
-            TypeMessage.TEXT.name -> {
+            MessageType.TEXT.name -> {
                 tvMessage.text = message.message
 
                 Utils.showView(tvMessage)
@@ -72,7 +72,7 @@ class ItemChatLeftViewHolder(itemView: View,
                 Utils.hideView(cardViewImage)
                 imvImage.setImageDrawable(null)
             }
-            TypeMessage.LIKE.name -> {
+            MessageType.LIKE.name -> {
                 tvMessage.text = ""
 
                 Utils.hideView(tvMessage)
@@ -80,7 +80,7 @@ class ItemChatLeftViewHolder(itemView: View,
                 Utils.hideView(cardViewImage)
                 imvImage.setImageDrawable(null)
             }
-            TypeMessage.MEDIA.name -> {
+            MessageType.MEDIA.name -> {
                 tvMessage.text = ""
                 tvMessage.visibility = View.INVISIBLE
                 Utils.hideView(imvHeart)

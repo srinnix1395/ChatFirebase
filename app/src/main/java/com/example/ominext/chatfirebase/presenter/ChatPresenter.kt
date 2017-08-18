@@ -311,10 +311,10 @@ class ChatPresenter : LifecycleObserver {
         message.createdAt = System.currentTimeMillis()
 
         if (typeMessage == 0 || typeMessage == 1) {
-            message.messageType = TypeMessage.LIKE.name
+            message.messageType = MessageType.LIKE.name
             message.message = null
         } else {
-            message.messageType = TypeMessage.TEXT.name
+            message.messageType = MessageType.TEXT.name
             message.message = text.trim()
         }
 
@@ -325,9 +325,9 @@ class ChatPresenter : LifecycleObserver {
 //        messageMap.put(ChatConstant.CREATED_AT, ServerValue.TIMESTAMP)
 //
 //        if (typeMessage == 0 || typeMessage == 1) {
-//            messageMap.put(ChatConstant.MESSAGE_TYPE, TypeMessage.LIKE.name)
+//            messageMap.put(ChatConstant.MESSAGE_TYPE, MessageType.LIKE.name)
 //        } else {
-//            messageMap.put(ChatConstant.MESSAGE_TYPE, TypeMessage.TEXT.name)
+//            messageMap.put(ChatConstant.MESSAGE_TYPE, MessageType.TEXT.name)
 //            messageMap.put(ChatConstant.MESSAGE, text.trim())
 //        }
 

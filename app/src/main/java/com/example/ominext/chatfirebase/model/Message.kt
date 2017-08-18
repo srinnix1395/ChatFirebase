@@ -12,7 +12,7 @@ class Message {
 
     var message: String? = null
 
-    var messageType: String = TypeMessage.TEXT.name
+    var messageType: String = MessageType.TYPING.name
 
     var createdAt: Long = 0
 
@@ -21,7 +21,7 @@ class Message {
     var isSeen: Boolean = false
 
     fun isTypingMessage(): Boolean {
-        return messageType == TypeMessage.TYPING.name
+        return messageType == MessageType.TYPING.name
     }
 
     fun copy(messageSample: Message) {
@@ -34,7 +34,7 @@ class Message {
     }
 }
 
-enum class TypeMessage {
+enum class MessageType {
     LIKE,
     TEXT,
     MEDIA,
